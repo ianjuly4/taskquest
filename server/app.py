@@ -9,6 +9,30 @@ from datetime import datetime
 def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
 
+class Login(Resource):
+    def post(self):
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+        print(f"Login attempt for username: {username}")
+
+        user = User.query.filter(User.username == username).first()
+
+        if not user:
+            print(f"User not found: {username}")
+            return make_response({'error': 'Username Not Found'}, 401)
+        else:
+            print(f"User found: {user.username}")
+
+        if user.authenticate(password):
+            return make_response({'user': user.to_dict(rules=('-_password_hash',))}, 200)
+        else:
+            print(f"Password mismatch for user {username}")
+            return make_response({'error': 'Incorrect password'}, 401)
+
+api.add_resource(Login, "/login")
+
 class Users(Resource):
     def get(self):
         user_dict_list = [user.to_dict() for user in User.query.all()]
@@ -17,8 +41,6 @@ class Users(Resource):
         else:
             return {"message": "No Users Found"}, 404
                
-               
-    
     def post(self):
         data = request.get_json()
 

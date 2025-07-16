@@ -12,6 +12,7 @@ const MyContextProvider = ({children}) =>{
   const signup = async (username, password) => {
   setError(null);
   setLoading(true); 
+  setIsLoggedIn(false)
   try {
     const response = await fetch("http://127.0.0.1:5555/users", {
       method: "POST",
@@ -38,6 +39,41 @@ const MyContextProvider = ({children}) =>{
   }
 };
 
+ const login = (username, password) => {
+    setLoading(true);
+    setError(null);
+
+    return fetch("http://127.0.0.1:5555/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        if (data.user && data.user.id) {
+          setUser(data.user);
+          setIsLoggedIn(true);
+          //console.log("Login successful", data.user);
+          return true;
+        } else if (data.error) {
+          console.log(data.error);
+          setError(data.error + " An error occurred. Please try again.");
+          return false;
+        }
+      })
+      .catch((error) => {
+        console.log(error.message);
+        setError(error.message || "An error occurred. Please try again later.");
+        return false;
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
     
  return (
     <MyContext.Provider
@@ -46,7 +82,9 @@ const MyContextProvider = ({children}) =>{
         user,
         setUser,
         setError,
-        error
+        error,
+        login,
+        isLoggedIn
       }}
     >
       {children}

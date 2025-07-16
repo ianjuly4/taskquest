@@ -1,16 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { NavLink } from "react-router-dom";
+import { MyContext } from './MyContext';
+import { useFormik } from "formik";
+import * as yup from "yup";
 
 const NavBar = () => {
+  const { error, login, logout, user, isLoggedIn } = useContext(MyContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dateTime, setDateTime] = useState(new Date())
+  const [dateTime, setDateTime] = useState(new Date());
 
-  useEffect(()=>{
-    const timer = setInterval(()=>{
+
+  useEffect(() => {
+    const timer = setInterval(() => {
       setDateTime(new Date());
-    }, 1000)
-    return ()=> clearInterval(timer)
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
+
+  const formSchema = yup.object().shape({
+    username: yup.string().required("Must enter a username.").max(25),
+    password: yup.string().required("Must enter a password").max(25),
+  });
+
+  const loginFormik = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+    },
+    validationSchema: formSchema,
+    onSubmit: async (values) => {
+      const success = await login(values.username, values.password);
+      if (success) {
+        setDropdownOpen(false);
+      }
+    },
+  });
 
   const formattedDateTime = dateTime.toLocaleString();
 
@@ -23,63 +47,85 @@ const NavBar = () => {
   };
 
   return (
-    <div className="text-sm font-medium flex items-center space-x-2 relative">
-      {/*Current Time */}
+    <div className="text-sm font-medium flex items-center space-x-4 relative">
+      {/* Current Time */}
       <div>{formattedDateTime}</div>
-      {/* Login button */}
-      <button
-        className="bg-white text-black px-2 py-2 rounded-lg shadow"
-        onClick={handleDropdownToggle}
-      >
-        Login
-      </button>
 
-      {/* Dropdown: shows when dropdownOpen is true */}
-      {dropdownOpen && (
-        <div
-          className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-20"
-          onMouseLeave={handleDropdownClose}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Submit login form");
-              setDropdownOpen(false);
-            }}
+      {/* Auth Buttons */}
+      {isLoggedIn && user ? (
+        <div className="flex items-center space-x-2">
+          {/*<span className="text-gray-700">Hi, {user.username}!</span>*/}
+          <button
+            className="bg-white text-black px-2 py-2 rounded-lg shadow"
+            onClick={logout}
           >
-            <label className="block mb-2 text-black font-semibold" htmlFor="username">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              className="w-full mb-3 px-2 py-1 border rounded"
-              placeholder="Enter username"
-              required
-            />
-
-            <label className="block mb-2 text-black font-semibold" htmlFor="password">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="w-full mb-3 px-2 py-1 border rounded"
-              placeholder="Enter password"
-              required
-            />
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-            >
-              Submit
-            </button>
-          </form>
+            Logout
+          </button>
         </div>
+      ) : (
+        <>
+          <button
+            className="bg-white text-black px-2 py-2 rounded-lg shadow"
+            onClick={handleDropdownToggle}
+          >
+            Login
+          </button>
+
+          {/* Login Dropdown */}
+          {dropdownOpen && (
+            <div
+              className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-20"
+              //onMouseLeave={handleDropdownClose}
+            >
+              <form onSubmit={loginFormik.handleSubmit}>
+                <label className="block mb-2 text-black font-semibold">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  className="input input-bordered w-full mb-2"
+                  value={loginFormik.values.username}
+                  onChange={loginFormik.handleChange}
+                  onBlur={loginFormik.handleBlur}
+                />
+                {loginFormik.touched.username && loginFormik.errors.username && (
+                  <div className="text-red-500 text-sm">{loginFormik.errors.username}</div>
+                )}
+
+                <label className="block mb-2 text-black font-semibold">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="input input-bordered w-full mb-2"
+                  value={loginFormik.values.password}
+                  onChange={loginFormik.handleChange}
+                  onBlur={loginFormik.handleBlur}
+                />
+                {loginFormik.touched.password && loginFormik.errors.password && (
+                  <div className="text-red-500 text-sm">{loginFormik.errors.password}</div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                >
+                  Enter
+                </button>
+                {error && (
+                  <div className="text-red-500 text-xs mt-2 text-center">{error}</div>
+                )}
+              </form>
+            </div>
+          )}
+        </>
       )}
 
-      {/* NavLink for Account */}
+      {/* NavLink to Account Page */}
       <NavLink to="/account">
         <button className="bg-white text-black px-2 py-2 rounded-lg shadow">
           Account

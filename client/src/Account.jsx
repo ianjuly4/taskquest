@@ -8,6 +8,7 @@ import * as yup from "yup";
 function Account() {
   const { signup, setError, error, user, setUser, isLoggedIn } = useContext(MyContext);
 
+  console.log(user)
   const formSchema = yup.object().shape({
     username: yup.string().required("Must enter a username.").max(50),
     password: yup.string().required("Must enter a password").max(50),
@@ -33,7 +34,7 @@ function Account() {
 
           {/* Username Field */}
           <div className="form-control flex flex-row items-center gap-4 justify-center my-2 w-full max-w-md">
-            <label htmlFor="username" className="min-w-[90px] text-right font-medium">Username:</label>
+            <label className="min-w-[90px] text-right font-medium">Username:</label>
             <input
               type="text"
               id="username"
@@ -51,7 +52,7 @@ function Account() {
 
           {/* Password Field */}
           <div className="form-control flex flex-row items-center gap-4 justify-center my-2 w-full max-w-md">
-            <label htmlFor="password" className="min-w-[90px] text-right font-medium">Password:</label>
+            <label  className="min-w-[90px] text-right font-medium">Password:</label>
             <input
               type="password"
               id="password"
