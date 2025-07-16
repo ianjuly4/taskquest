@@ -24,8 +24,9 @@ app = Flask(
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'instance', 'app.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
-
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.json.compact = False
+
 
 
 metadata = MetaData(naming_convention={
@@ -37,7 +38,7 @@ db = SQLAlchemy(metadata=metadata)
 
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
-CORS(app, cors_allowed_origins=['http://localhost:5174','http://127.0.0.1:5174'], supports_credentials=True)
+CORS(app, cors_allowed_origins=['http://localhost:5174/'], supports_credentials=True)
 
 api = Api(app)
 
@@ -45,4 +46,4 @@ api = Api(app)
 db.init_app(app)
 
 
-__all__ = ["app", "db", "bcrypt", "migrate", "api", "os", "Flask"]
+__all__ = ["app", "db", "bcrypt", "migrate", "api", "os", "Flask", ]

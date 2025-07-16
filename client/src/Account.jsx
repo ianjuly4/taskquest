@@ -30,8 +30,8 @@ function Account() {
     <div className="min-h-[600px] max-w-3xl mx-auto border-4 border-gray-300 flex flex-col rounded-3xl p-6 bg-white shadow-md">
       <Header />
       <div className="border-4 border-gray-300 black-text flex flex-col rounded-3xl p-6 mt-4 bg-gray-50">
+        
         <form className="flex flex-col items-center justify-center" onSubmit={formik.handleSubmit}>
-
           {/* Username Field */}
           <div className="form-control flex flex-row items-center gap-4 justify-center my-2 w-full max-w-md">
             <label className="min-w-[90px] text-right font-medium">Username:</label>

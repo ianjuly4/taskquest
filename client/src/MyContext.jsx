@@ -9,45 +9,70 @@ const MyContextProvider = ({children}) =>{
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   
+  //checksession
+  useEffect(() => {
+    fetch("http://localhost:5555/check_session", {
+      method: "GET",
+      credentials: "include"
+    })
+      .then((r) => {
+        if (r.ok) return r.json();
+        throw new Error("Not logged in");
+      })
+      .then((user) => {
+        setUser(user);
+        setIsLoggedIn(true);
+      })
+      .catch(() => {
+        setUser(null);
+        setIsLoggedIn(false);
+      });
+    }, []);
+
+
+  //signup
   const signup = async (username, password) => {
-  setError(null);
-  setLoading(true); 
-  setIsLoggedIn(false)
-  try {
-    const response = await fetch("http://127.0.0.1:5555/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    setError(null);
+    setLoading(true); 
+    setIsLoggedIn(false)
+    try {
+      const response = await fetch("http://localhost:5555/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Signup failed");
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+      setIsLoggedIn(true);
+      setUser(data);
+      return true;
+    } catch (error) {
+      setError(error.message);
+      console.log(error)
+      return false; 
+    } finally {
+      setLoading(false);
     }
-    setIsLoggedIn(true);
-    setUser(data);
-    return true;
-  } catch (error) {
-    setError(error.message);
-    console.log(error)
-    return false; 
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
- const login = (username, password) => {
+  //Login
+  const login = (username, password) => {
     setLoading(true);
     setError(null);
 
-    return fetch("http://127.0.0.1:5555/login", {
+    return fetch("http://localhost:5555/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify({ username, password }),
     })
       .then((response) => response.json())
@@ -74,6 +99,30 @@ const MyContextProvider = ({children}) =>{
       });
   };
 
+  //logout
+  const logout = async () => {
+    try{
+      const response = await fetch("http://localhost:5555/logout", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: 'include',
+      })
+      if(!response.ok){
+        const data = await response.json();
+        throw new Error(data?.error || 'Failed to logout')
+      }
+      setError(null)
+      setUser(null);
+      setIsLoggedIn(false);
+     }catch(error) {
+      console.log('logout failed:', error)
+      setError("Logout Error: " + error.message);
+      };
+  };
+  
+
     
  return (
     <MyContext.Provider
@@ -84,7 +133,8 @@ const MyContextProvider = ({children}) =>{
         setError,
         error,
         login,
-        isLoggedIn
+        isLoggedIn,
+        logout
       }}
     >
       {children}
