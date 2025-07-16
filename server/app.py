@@ -29,12 +29,8 @@ api.add_resource(CheckSession, "/check_session")
 
 class Logout(Resource):
     def delete(self):
-        print("Incoming cookies:", request.cookies)
-        print("Session before clearing:", dict(session))
         session.clear()
-        print("Session after clearing:", dict(session))
         response = make_response({'message': 'Logged out successfully'}, 200)
-        response.set_cookie('session', '', expires=0, path='/', httponly=True, samesite='Lax')
         return response
 
 api.add_resource(Logout, '/logout')

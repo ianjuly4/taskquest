@@ -66,9 +66,13 @@ class Task(db.Model, SerializerMixin):
     duration_minutes = db.Column(db.Integer, nullable=True)  
     due_datetime = db.Column(db.DateTime, nullable=True)    
     status = db.Column(db.String, nullable=False, default="pending")
+    color = db.Column(db.String, nullable=True)
+    color_meaning = db.Column(db.String, nullable=True)
+    repeat = db.Column(db.String, nullable=True)
+    comments = db.Column(db.Text, nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    date_id = db.Column(db.Integer, db.ForeignKey('dates.id'), nullable=True)  # Link to Date, optional
+    date_id = db.Column(db.Integer, db.ForeignKey('dates.id'), nullable=True)  
 
     user = relationship('User', back_populates='tasks')
     date = relationship('Date', back_populates='tasks')
