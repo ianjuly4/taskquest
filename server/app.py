@@ -23,17 +23,17 @@ class Users(Resource):
         data = request.get_json()
 
         if not data:
-            return {"message": "Invalid data. No data provided."}, 400
+            return jsonify({"message": "Invalid data. No data provided."}), 400
 
         username = data.get('username')
         password = data.get('password')
 
         if not username or not password:
-            return {"error": "Username and Password are required."}, 422
+            return jsonify({"error": "Username and Password are required."}), 422
 
         user = User.query.filter(User.username == username).first()
         if user:
-            return {"error": "Username Already Taken."}, 422
+            return jsonify({"error": "Username Already Taken."}), 422
 
         new_user = User(username=username)
         new_user.password_hash = password  
@@ -41,7 +41,7 @@ class Users(Resource):
         db.session.add(new_user)
         db.session.commit()
 
-        return new_user.to_dict(rules=('-_password_hash',)), 201
+        return jsonify(new_user.to_dict(rules=('-_password_hash',))), 201
 
     
 api.add_resource(Users, '/users')

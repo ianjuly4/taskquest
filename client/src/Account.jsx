@@ -5,9 +5,8 @@ import { MyContext } from './MyContext';
 import { useFormik } from "formik";
 import * as yup from "yup";
 
-const Account = () => {
-  const { signup, error: contextError, setUser } = useContext(MyContext); 
-  const [localError, setLocalError] = useState(null);
+function Account() {
+  const { signup, setError, error, user, setUser, isLoggedIn } = useContext(MyContext);
 
   const formSchema = yup.object().shape({
     username: yup.string().required("Must enter a username.").max(50),
@@ -21,16 +20,9 @@ const Account = () => {
     },
     validationSchema: formSchema,
     onSubmit: async (values) => {
-      setLocalError(null);
-      const success = await signup(values.username, values.password);
-      if (success) {
-        // setUser should be available from context
-        console.log("Signup successful");
-      } else {
-        console.log(contextError);
-        setLocalError("Invalid username or password.");
-      }
+      await signup(values.username, values.password);
     },
+
   });
 
   return (
@@ -80,7 +72,7 @@ const Account = () => {
             <button type="submit" className="btn btn-primary w-full">
               Create Account
             </button>
-            {localError && <div className="text-red-500 text-sm mt-2 text-center">{localError}</div>}
+            {error && <div className="text-red-500 text-sm mt-2 text-center">{error}</div>}
           </div>
 
         </form>

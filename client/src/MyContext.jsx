@@ -11,8 +11,7 @@ const MyContextProvider = ({children}) =>{
   
   const signup = async (username, password) => {
   setError(null);
-  setLoading(true); // optional, if you're using loading somewhere
-
+  setLoading(true); 
   try {
     const response = await fetch("http://127.0.0.1:5555/users", {
       method: "POST",
@@ -27,13 +26,13 @@ const MyContextProvider = ({children}) =>{
     if (!response.ok) {
       throw new Error(data.error || "Signup failed");
     }
-
     setIsLoggedIn(true);
     setUser(data);
-    return true; // ✅ RETURN SUCCESS
+    return true;
   } catch (error) {
     setError(error.message);
-    return false; // ✅ RETURN FAILURE
+    console.log(error)
+    return false; 
   } finally {
     setLoading(false);
   }
@@ -44,7 +43,10 @@ const MyContextProvider = ({children}) =>{
     <MyContext.Provider
       value={{
         signup,
-        user
+        user,
+        setUser,
+        setError,
+        error
       }}
     >
       {children}

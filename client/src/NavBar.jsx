@@ -1,8 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
 const NavBar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dateTime, setDateTime] = useState(new Date())
+
+  useEffect(()=>{
+    const timer = setInterval(()=>{
+      setDateTime(new Date());
+    }, 1000)
+    return ()=> clearInterval(timer)
+  }, []);
+
+  const formattedDateTime = dateTime.toLocaleString();
 
   const handleDropdownToggle = () => {
     setDropdownOpen(!dropdownOpen);
@@ -14,6 +24,8 @@ const NavBar = () => {
 
   return (
     <div className="text-sm font-medium flex items-center space-x-2 relative">
+      {/*Current Time */}
+      <div>{formattedDateTime}</div>
       {/* Login button */}
       <button
         className="bg-white text-black px-2 py-2 rounded-lg shadow"
