@@ -9,6 +9,54 @@ from datetime import datetime
 def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
 
+class Tasks(Resource):
+    def post(self):
+            data = request.get_json()
+
+            user_id = session.get('user_id')
+            if not user_id:
+                return make_response({"error": "Unauthorized, Please Login to Continue"}, 401)
+
+            date = data.get("date")
+            if not date:
+                return make_response({"error": "Date required."}, 400)
+            
+            existing_date = Date.query.filter_by(date=date, user_id=user_id).first()
+            if existing_date:
+                date_id = existing_date.id
+            else:
+                new_date = Date(
+                    date=date,
+                    user_id=user_id
+                )
+                db.session.add(new_date)
+                db.session.flush()
+                date_id = new_date.id
+
+            new_task = Task(
+                title= data.get('title'),
+                category= data.get('category') ,
+                duration_minutes = data.get('duration'),
+                due_datetime = data.get('dueDateTime'),
+                status = data.get('status'),
+                color = data.get('color'),
+                color_meaning = data.get('colorMeaning') ,
+                repeat = data.get('repeat'),
+                comments = data.get('comments'),
+                user_id=user_id,
+                date_id=date_id
+            )
+            
+            
+        
+            db.session.add(new_task)
+            db.session.commit()
+
+        
+            return make_response(new_task.to_dict(), 201)
+
+
+api.add_resource(Tasks, "/tasks")
 
 class CheckSession(Resource):
     def get(self):

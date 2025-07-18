@@ -8,6 +8,51 @@ const MyContextProvider = ({children}) =>{
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState([])
+
+  //createTask
+  const createTask = () => {
+    setLoading(true);
+    setError(null);
+
+    const requestBody = {
+      title,
+      author: authors.join(", "), 
+      synopsis: description,
+      cover_image: coverImageUrl,
+      progress: 0, 
+      google_key: bookId
+     
+    };
+
+    fetch("/books", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.id) {
+          setUser((prevUser) => ({
+            ...prevUser,
+            books: Array.isArray(prevUser.books) ? [...prevUser.books, data] : [data],
+          }));
+          return data;
+        } else {
+          throw new Error("Failed to create book. Please try again.");
+        }
+      })
+      .catch((error) => {
+        setError('Error creating book: ' + error.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+};
+
+
   
   //checksession
   useEffect(() => {
@@ -134,7 +179,8 @@ const MyContextProvider = ({children}) =>{
         error,
         login,
         isLoggedIn,
-        logout
+        logout, 
+        createTask
       }}
     >
       {children}
