@@ -10,6 +10,8 @@ def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
 
 
+from datetime import datetime, timedelta
+
 class Tasks(Resource):
     def post(self):
         data = request.get_json()
@@ -23,24 +25,10 @@ class Tasks(Resource):
             return make_response({"error": "Date required."}, 400)
 
         try:
-            
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return make_response({"error": "Invalid date format. Use YYYY-MM-DD."}, 400)
 
-        
-        existing_date = Date.query.filter_by(date=date_obj, user_id=user_id).first()
-        if existing_date:
-            date_id = existing_date.id
-        else:
-            new_date = Date(
-                date=date_obj,
-                user_id=user_id
-            )
-            db.session.add(new_date)
-            db.session.flush()
-            date_id = new_date.id
-            
         due_datetime_str = data.get('dueDateTime')
         due_datetime = None
         if due_datetime_str:
@@ -48,20 +36,63 @@ class Tasks(Resource):
                 due_datetime = datetime.fromisoformat(due_datetime_str)
             except ValueError:
                 return make_response({"error": "Invalid datetime format for dueDateTime"}, 400)
-            
+
+        if data.get('repeat') == 'daily':
+            repeated_tasks = []
+            for i in range(30):  
+                task_date = date_obj + timedelta(days=i)
+
+                
+                date_entry = Date.query.filter_by(date=task_date, user_id=user_id).first()
+                if not date_entry:
+                    date_entry = Date(date=task_date, user_id=user_id)
+                    db.session.add(date_entry)
+                    db.session.flush()  
+
+         
+                repeated_task = Task(
+                    title=data.get('title'),
+                    category=data.get('category'),
+                    duration_minutes=data.get('duration'),
+                    due_datetime=None,  
+                    status=data.get('status'),
+                    color=data.get('color'),
+                    color_meaning=data.get('colorMeaning'),
+                    repeat=None,  
+                    comments=data.get('comments'),
+                    content=data.get('content'),
+                    user_id=user_id,
+                    date_id=date_entry.id
+                )
+
+                db.session.add(repeated_task)
+                repeated_tasks.append(repeated_task)
+
+            db.session.commit()
+            return make_response(
+                {"message": f"{len(repeated_tasks)} daily repeating tasks created."},
+                201
+            )
+
+        existing_date = Date.query.filter_by(date=date_obj, user_id=user_id).first()
+        if not existing_date:
+            existing_date = Date(date=date_obj, user_id=user_id)
+            db.session.add(existing_date)
+            db.session.flush()
+
         new_task = Task(
-            title = data.get('title'),
-            category = data.get('category'),
-            duration_minutes = data.get('duration'),
-            due_datetime = due_datetime,
-            status = data.get('status'),
-            color = data.get('color'),
-            color_meaning = data.get('colorMeaning'),
-            repeat = data.get('repeat'),
-            comments = data.get('comments'),
-            content = data.get('content'),
-            user_id = user_id,
-            date_id = date_id
+            title=data.get('title'),
+            category=data.get('category'),
+            duration_minutes=data.get('duration'),
+            due_datetime=due_datetime,
+            status=data.get('status'),
+            color=data.get('color'),
+            color_meaning=data.get('colorMeaning'),
+            repeat=data.get('repeat'),
+            comments=data.get('comments'),
+            content=data.get('content'),
+            user_id=user_id,
+            date_id=existing_date.id
         )
 
         db.session.add(new_task)

@@ -7,8 +7,8 @@ import * as yup from "yup";
 
 function Account() {
   const { signup, setError, error, user, setUser, isLoggedIn } = useContext(MyContext);
-
-  console.log(user)
+  const {username} = user || []
+  
   const formSchema = yup.object().shape({
     username: yup.string().required("Must enter a username.").max(50),
     password: yup.string().required("Must enter a password").max(50),
@@ -31,6 +31,8 @@ function Account() {
       <Header />
       <div className="border-4 border-gray-300 black-text flex flex-col rounded-3xl p-6 mt-4 bg-gray-50">
         
+      {/*Create Account Form */}
+      {!isLoggedIn && !user ? (
         <form className="flex flex-col items-center justify-center" onSubmit={formik.handleSubmit}>
           {/* Username Field */}
           <div className="form-control flex flex-row items-center gap-4 justify-center my-2 w-full max-w-md">
@@ -75,8 +77,10 @@ function Account() {
             </button>
             {error && <div className="text-red-500 text-sm mt-2 text-center">{error}</div>}
           </div>
-
         </form>
+        ):(<div>
+         Welcome back, {username}
+        </div>)}
       </div>
     </div>
   );

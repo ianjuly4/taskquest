@@ -6,11 +6,11 @@ const TaskContainer = () => {
   const { dates, user, isLoggedIn } = useContext(MyContext);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const formattedDate = currentDate.toISOString().split("T")[0];
+  const formattedDate = currentDate.toLocaleDateString();
   const today = dates.find((d) => d.date === formattedDate);
   const tasks = today?.tasks || [];
 
-  console.log(today.tasks)
+  //console.log(today.tasks)
   return (
     <div className='border-4 border-gray-300 black-text flex flex-col rounded-3xl p-6'>
       <h2 className="text-xl font-bold">
