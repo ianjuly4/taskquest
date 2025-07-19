@@ -15,9 +15,9 @@ const CreateTask = () => {
   today.setHours(0, 0, 0, 0);
 
   const formSchema = yup.object().shape({
-    date: yup
+    dateTime: yup
       .date()
-      .required("Date is required")
+      .required("Date and time of task start is required")
       .min(today, "Date must be today or in the future"),
     title: yup.string().required("Title is required").max(100),
     category: yup.string().max(50, "Category too long"),
@@ -63,7 +63,7 @@ const CreateTask = () => {
 
   const createTaskFormik = useFormik({
     initialValues: {
-      date: null,
+      dateTime: null,
       title: "",
       category: "",
       duration: "",
@@ -85,8 +85,8 @@ const CreateTask = () => {
       const minutes = minMatch ? parseInt(minMatch[1]) : 0;
       const totalMinutes = hours * 60 + minutes;
 
-      const formattedDate = values.date
-        ? values.date.toISOString().split("T")[0]
+      const formattedDate = values.dateTime
+        ? values.dateTime.toISOString()
         : null;
       const formattedDueDateTime = values.dueDateTime
         ? values.dueDateTime.toISOString()
@@ -105,6 +105,10 @@ const CreateTask = () => {
         values.comments,
         values.content
       );
+      if(result){
+        setDropdownOpen(false);
+        createTaskFormik.resetForm()
+      }
     },
   });
 
@@ -193,13 +197,13 @@ const CreateTask = () => {
 
           >
           <div className="col-span-1 sm:col-span-4 flex flex-col sm:flex-row gap-4">
-            {/* Date */}
+            {/* DateTime */}
             <div className="flex flex-col col-span-1 sm:col-span-2 relative">
               <label className="text-sm font-medium mb-1 flex items-center">
-                Date
+                Date/Time
                 <button
                   type="button"
-                  onClick={() => setActiveTooltip(activeTooltip === "date" ? null : "date")}
+                  onClick={() => setActiveTooltip(activeTooltip === "dateTime" ? null : "dateTime")}
                   className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
                   aria-label="Toggle date help"
                 >
@@ -207,10 +211,13 @@ const CreateTask = () => {
                 </button>
               </label>
               <DatePicker
-                selected={createTaskFormik.values.date}
-                onChange={(date) => createTaskFormik.setFieldValue("date", date)}
-                placeholderText="Current/future date"
-                dateFormat="yyyy/MM/dd"
+                selected={createTaskFormik.values.dateTime}
+                onChange={(dateTime) => createTaskFormik.setFieldValue("dateTime", dateTime)}
+                placeholderText="Task start"
+                dateFormat="yyyy/MM/dd h:mm aa"
+                showTimeSelect
+                timeIntervals={15}
+                timeCaption="Time"
                 className="border rounded px-2 py-1 text-sm w-[150px]"
               />
             
@@ -219,7 +226,7 @@ const CreateTask = () => {
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
                   onMouseLeave={() => setActiveTooltip(null)}
                 >
-                  Used to place the task on your calendar or task list. Must be today or a future date.
+                  Date and time of task start. Must be today or a future date.
                 </div>
               )}
             </div>

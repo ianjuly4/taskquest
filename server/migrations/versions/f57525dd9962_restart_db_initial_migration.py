@@ -1,8 +1,8 @@
-"""initial migrate
+"""restart db initial migration
 
-Revision ID: 669b861449ef
+Revision ID: f57525dd9962
 Revises: 
-Create Date: 2025-07-15 14:11:26.020737
+Create Date: 2025-07-19 12:54:55.805400
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '669b861449ef'
+revision = 'f57525dd9962'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -27,7 +27,7 @@ def upgrade():
     )
     op.create_table('dates',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('date', sa.Date(), nullable=False),
+    sa.Column('date_time', sa.DateTime(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_dates_user_id_users')),
     sa.PrimaryKeyConstraint('id')
@@ -39,6 +39,11 @@ def upgrade():
     sa.Column('duration_minutes', sa.Integer(), nullable=True),
     sa.Column('due_datetime', sa.DateTime(), nullable=True),
     sa.Column('status', sa.String(), nullable=False),
+    sa.Column('color', sa.String(), nullable=True),
+    sa.Column('color_meaning', sa.String(), nullable=True),
+    sa.Column('repeat', sa.String(), nullable=True),
+    sa.Column('comments', sa.Text(), nullable=True),
+    sa.Column('content', sa.Text(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('date_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['date_id'], ['dates.id'], name=op.f('fk_tasks_date_id_dates')),

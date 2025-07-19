@@ -2,15 +2,14 @@ from flask import Flask, render_template, request, make_response, session, send_
 from flask_restful import Api, Resource
 from config import app, db, bcrypt, migrate, api, os
 from models import User, Date, Task
-from datetime import datetime
+from datetime import datetime,timedelta
+from dateutil.relativedelta import relativedelta
+from dateutil.parser import parse
 
 @app.route('/')
 @app.route('/<path:path>')
 def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
-
-
-from datetime import datetime, timedelta
 
 class Tasks(Resource):
     def post(self):
@@ -18,43 +17,49 @@ class Tasks(Resource):
 
         user_id = session.get('user_id')
         if not user_id:
-            return make_response({"error": "Unauthorized, Please Login to Continue"}, 401)
+            return make_response({"error": "Unauthorized. Please login."}, 401)
 
-        date_str = data.get("date")
+        date_str = data.get("dateTime")
         if not date_str:
-            return make_response({"error": "Date required."}, 400)
-
+            return make_response({"error": "Date and time required."}, 400)
         try:
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+            date_obj = parse(date_str)  # handles 'Z' and other ISO formats
         except ValueError:
-            return make_response({"error": "Invalid date format. Use YYYY-MM-DD."}, 400)
+            return make_response({"error": "Invalid date format."}, 400)
 
+    
         due_datetime_str = data.get('dueDateTime')
         due_datetime = None
         if due_datetime_str:
             try:
                 due_datetime = datetime.fromisoformat(due_datetime_str)
             except ValueError:
-                return make_response({"error": "Invalid datetime format for dueDateTime"}, 400)
+                return make_response({"error": "Invalid format for dueDateTime."}, 400)
 
-        if data.get('repeat') == 'daily':
-            repeated_tasks = []
-            for i in range(30):  
-                task_date = date_obj + timedelta(days=i)
+        repeat = data.get('repeat')
+        repeated_tasks = []
 
-                
-                date_entry = Date.query.filter_by(date=task_date, user_id=user_id).first()
+        if repeat in ['daily', 'weekly', 'monthly']:
+          
+            if repeat == 'daily':
+                repeat_range = [date_obj + timedelta(days=i) for i in range(30)]
+            elif repeat == 'weekly':
+                repeat_range = [date_obj + timedelta(weeks=i) for i in range(4)]
+            elif repeat == 'monthly':
+                repeat_range = [date_obj + relativedelta(months=i) for i in range(3)]
+
+            for task_date in repeat_range:
+                date_entry = Date.query.filter_by(date_time=task_date, user_id=user_id).first()
                 if not date_entry:
-                    date_entry = Date(date=task_date, user_id=user_id)
+                    date_entry = Date(date_time=task_date, user_id=user_id)
                     db.session.add(date_entry)
-                    db.session.flush()  
+                    db.session.flush()
 
-         
                 repeated_task = Task(
                     title=data.get('title'),
                     category=data.get('category'),
                     duration_minutes=data.get('duration'),
-                    due_datetime=None,  
+                    due_datetime=None,
                     status=data.get('status'),
                     color=data.get('color'),
                     color_meaning=data.get('colorMeaning'),
@@ -64,20 +69,19 @@ class Tasks(Resource):
                     user_id=user_id,
                     date_id=date_entry.id
                 )
-
                 db.session.add(repeated_task)
                 repeated_tasks.append(repeated_task)
 
             db.session.commit()
             return make_response(
-                {"message": f"{len(repeated_tasks)} daily repeating tasks created."},
+                {"message": f"{len(repeated_tasks)} {repeat} repeating tasks created."},
                 201
             )
-
-        existing_date = Date.query.filter_by(date=date_obj, user_id=user_id).first()
-        if not existing_date:
-            existing_date = Date(date=date_obj, user_id=user_id)
-            db.session.add(existing_date)
+        
+        date_entry = Date.query.filter_by(date_time=date_obj, user_id=user_id).first()
+        if not date_entry:
+            date_entry = Date(date_time=date_obj, user_id=user_id)
+            db.session.add(date_entry)
             db.session.flush()
 
         new_task = Task(
@@ -88,18 +92,17 @@ class Tasks(Resource):
             status=data.get('status'),
             color=data.get('color'),
             color_meaning=data.get('colorMeaning'),
-            repeat=data.get('repeat'),
+            repeat=repeat,
             comments=data.get('comments'),
             content=data.get('content'),
             user_id=user_id,
-            date_id=existing_date.id
+            date_id=date_entry.id
         )
 
         db.session.add(new_task)
         db.session.commit()
 
         return make_response(new_task.to_dict(), 201)
-
 api.add_resource(Tasks, '/tasks')
 
 class CheckSession(Resource):
@@ -185,7 +188,6 @@ class Users(Resource):
 
         return jsonify(new_user.to_dict(rules=('-_password_hash',))), 201
 
-    
 api.add_resource(Users, '/users')
 
 if __name__ == '__main__':

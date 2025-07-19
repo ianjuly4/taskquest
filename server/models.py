@@ -49,7 +49,7 @@ class Date(db.Model, SerializerMixin):
     serialize_rules = ('-user.date', '-tasks.date', '-dates.user', '-date.tasks', '-user.tasks','-tasks.user' )
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=False)
+    date_time = db.Column(db.DateTime, nullable=False)
 
     user_id = db.Column(db.Integer, ForeignKey('users.id'), nullable=False)
     user = relationship('User', back_populates='dates')

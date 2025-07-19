@@ -11,7 +11,6 @@ const MyContextProvider = ({children}) =>{
   const [tasks, setTasks] = useState([])
   const [dates, setDates] = useState([])
 
-  console.log(user)
   //createTask
   const createTask = (
     formattedDate,
@@ -30,7 +29,7 @@ const MyContextProvider = ({children}) =>{
     setError(null);
 
     const requestBody = {
-      date: formattedDate, 
+      dateTime: formattedDate, 
       title,
       category,
       duration: totalMinutes, 
@@ -147,8 +146,8 @@ const MyContextProvider = ({children}) =>{
         if (data.user && data.user.id) {
           setUser(data.user);
           setIsLoggedIn(true);
-          setDates(user?.dates || [])
-          setTasks(user?.tasks || [])
+          setDates(data.user?.dates || [])
+          setTasks(data.user?.tasks || [])
           //console.log("Login successful", data.user);
           return true;
         } else if (data.error) {
