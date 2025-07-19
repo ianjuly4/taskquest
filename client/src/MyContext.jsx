@@ -9,50 +9,66 @@ const MyContextProvider = ({children}) =>{
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState([])
+  const [dates, setDates] = useState([])
 
+  console.log(user)
   //createTask
-  const createTask = () => {
+  const createTask = (
+    formattedDate,
+    title,
+    category,
+    totalMinutes,
+    formattedDueDateTime,
+    status,
+    color,
+    colorMeaning,
+    repeat,
+    comments,
+    content
+    ) => {
     setLoading(true);
     setError(null);
 
     const requestBody = {
+      date: formattedDate, 
       title,
-      author: authors.join(", "), 
-      synopsis: description,
-      cover_image: coverImageUrl,
-      progress: 0, 
-      google_key: bookId
-     
+      category,
+      duration: totalMinutes, 
+      dueDateTime: formattedDueDateTime, 
+      status,
+      color,
+      colorMeaning,
+      repeat,
+      comments,
+      content
     };
 
-    fetch("/books", {
+    return fetch("http://localhost:5555/tasks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include", 
       body: JSON.stringify(requestBody),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.id) {
-          setUser((prevUser) => ({
-            ...prevUser,
-            books: Array.isArray(prevUser.books) ? [...prevUser.books, data] : [data],
-          }));
-          return data;
-        } else {
-          throw new Error("Failed to create book. Please try again.");
+      .then(async (response) => {
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create task");
         }
+
+        setTasks((prevTasks) => [...prevTasks, data]);
+        return data;
       })
       .catch((error) => {
-        setError('Error creating book: ' + error.message);
+        console.error("Task creation error:", error.message);
+        setError("Error creating task: " + error.message);
       })
       .finally(() => {
         setLoading(false);
       });
-};
-
-
+  };
   
   //checksession
   useEffect(() => {
@@ -64,13 +80,18 @@ const MyContextProvider = ({children}) =>{
         if (r.ok) return r.json();
         throw new Error("Not logged in");
       })
-      .then((user) => {
-        setUser(user);
+      .then((data) => {
+        setUser(data.user);
+        setDates(data.user?.dates || [])
+        setTasks(data.user?.tasks || [])
+        console.log(data)
         setIsLoggedIn(true);
       })
       .catch(() => {
         setUser(null);
         setIsLoggedIn(false);
+        setDates([]),
+        setTasks([])
       });
     }, []);
 
@@ -126,6 +147,8 @@ const MyContextProvider = ({children}) =>{
         if (data.user && data.user.id) {
           setUser(data.user);
           setIsLoggedIn(true);
+          setDates(user?.dates || [])
+          setTasks(user?.tasks || [])
           //console.log("Login successful", data.user);
           return true;
         } else if (data.error) {
@@ -180,7 +203,9 @@ const MyContextProvider = ({children}) =>{
         login,
         isLoggedIn,
         logout, 
-        createTask
+        createTask, 
+        tasks,
+        dates
       }}
     >
       {children}

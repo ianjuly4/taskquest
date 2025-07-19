@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateTask = () => {
-  const { user, isLoggedIn, createTask } = useContext(MyContext);
+  const { user, isLoggedIn, createTask, tasks } = useContext(MyContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [colorDropDown, setColorDropDown] = useState(false)
@@ -33,7 +33,10 @@ const CreateTask = () => {
       .required("Status is required"),
     color: yup
       .string()
-      .oneOf(["Red", "Green", "Blue", "Yellow", "Purple", ""], "Select a valid color"),
+      .oneOf([
+        "", "#EF4444", "#10B981", "#3B82F6", "#FACC15", "#8B5CF6",
+        "#FF6961", "#FFD580", "#ACE7EF", "#A0CED9", "#CBAACB", "#FFB7B2", "#D0F0C0"
+      ], "Select a valid color"),
     colorMeaning: yup
       .string()
       .max(50, 'Color meaning too long'),
@@ -42,7 +45,11 @@ const CreateTask = () => {
       .oneOf(["daily", "weekly", "monthly", ""], "Select if repeating"),
     comments: yup
       .string()
-      .max(200, "Comments are too long")
+      .max(200, "Comments are too long"),
+    content: yup
+      .string()
+      .max(500, "Content is too log(max 500 characters)")
+
   }).test(
     "duration-or-dueDateTime",
     "Either Duration or Due Date and Time is required",
@@ -56,7 +63,7 @@ const CreateTask = () => {
 
   const createTaskFormik = useFormik({
     initialValues: {
-      date: "",
+      date: null,
       title: "",
       category: "",
       duration: "",
@@ -66,6 +73,7 @@ const CreateTask = () => {
       colorMeaning: "",
       repeat: "",
       comments: "",
+      content: "",
     },
     validationSchema: formSchema,
     onSubmit: async (values) => {
@@ -94,7 +102,8 @@ const CreateTask = () => {
         values.color,
         values.colorMeaning,
         values.repeat,
-        values.comments
+        values.comments,
+        values.content
       );
     },
   });
@@ -118,15 +127,41 @@ const CreateTask = () => {
     { name: "Pastel Pink", value: "#FFB7B2" },
     { name: "Pastel Mint", value: "#D0F0C0" },
     
-   
   ];
 
+  const textInputFields = [
+    {
+      name: "category",
+      label: "Category",
+      placeholder: "ex. Exercise",
+      tooltip: "Optional. Label this task (e.g., ‘Exercise’, ‘Work’, ‘Health’)",
+    },
+    {
+      name: "duration",
+      label: "Duration",
+      placeholder: "ex. 1h 30m",
+      tooltip:  "How much time you intend to spend on this task (e.g., ‘1h 30m’). Either duration or due date and time is required. Both are optional but at least one should be filled.",
+    },
+    {
+      name: "colorMeaning",
+      label: "ColorMeaning",
+      placeholder: "ex. Difficulty or priority",
+      tooltip: "Optional. Describe what this color represents (e.g., ‘Urgent’, ‘Creative Work’).",
+    },
+    {
+      name: "comments",
+      label: "Comments",
+      placeholder: "ex. Increase weight",
+      tooltip: "Optional. Add any notes, details, or reminders about this task.",
+    }
+  ]
 
   return (
     <div className="w-full bg-gray-300 text-black border-4 border-gray-300 rounded-3xl p-4">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Create Task</h1>
+        
         <button
           type="button"
           className="text-black text-2xl font-bold"
@@ -135,6 +170,16 @@ const CreateTask = () => {
           {dropdownOpen ? "−" : "+"}
         </button>
       </div>
+      {/* Display Formik Errors if any */}
+        {Object.keys(createTaskFormik.errors).length > 0 && createTaskFormik.submitCount > 0 && (
+          <div className="mt-2 bg-red-100 border border-red-400 text-red-700 text-sm rounded px-4 py-2">
+            <ul className="list-disc list-inside space-y-1">
+              {Object.entries(createTaskFormik.errors).map(([key, error]) => (
+                <li key={key}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
       {dropdownOpen &&
         (!isLoggedIn && !user ? (
@@ -145,9 +190,11 @@ const CreateTask = () => {
           <form
             onSubmit={createTaskFormik.handleSubmit}
             className="grid grid-cols-1 sm:grid-cols-4 gap-x-4 gap-y-4 mt-4"
+
           >
+          <div className="col-span-1 sm:col-span-4 flex flex-col sm:flex-row gap-4">
             {/* Date */}
-            <div className="flex flex-col col-span-1 sm:col-span-4 relative">
+            <div className="flex flex-col col-span-1 sm:col-span-2 relative">
               <label className="text-sm font-medium mb-1 flex items-center">
                 Date
                 <button
@@ -166,11 +213,7 @@ const CreateTask = () => {
                 dateFormat="yyyy/MM/dd"
                 className="border rounded px-2 py-1 text-sm w-[150px]"
               />
-              {createTaskFormik.touched.date && createTaskFormik.errors.date && (
-                <div className="text-red-500 text-sm">
-                  {createTaskFormik.errors.date}
-                </div>
-              )}
+            
               {activeTooltip === "date" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
@@ -181,11 +224,10 @@ const CreateTask = () => {
               )}
             </div>
 
-
-            {/* Title */}
-            <div className="flex flex-col relative">
+            {/*Title */}
+            <div className="flex flex-col col-span-1 sm:col-span-2 relative">
               <label className="text-sm font-medium mb-1 flex items-center">
-                  Title
+                 Title
                 <button
                   type="button"
                   onClick={() => setActiveTooltip(activeTooltip === "title" ? null : "title")}
@@ -198,107 +240,57 @@ const CreateTask = () => {
               <input
                 type="text"
                 name="title"
-                className="border rounded px-2 py-1 text-sm"
+                className="border rounded px-2 py-1 text-sm w-[150px]"
                 placeholder="ex. Go to gym"
                 value={createTaskFormik.values.title}
                 onChange={createTaskFormik.handleChange}
                 onBlur={createTaskFormik.handleBlur}
               />
-              {createTaskFormik.touched.title &&
-                createTaskFormik.errors.title && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.title}
-                  </div>
-                )}
 
               {activeTooltip === "title" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
                   onMouseLeave={() => setActiveTooltip(null)}
                 >
-                  A brief description of the task.
+                A brief description of the task.
                 </div>
               )}
             </div>
-
-            {/* Category */}
-            <div className="flex flex-col relative">
+          </div>
+            {textInputFields.map((field)=>(
+            <div key={field.name} className="flex flex-col relative">
               <label className="text-sm font-medium mb-1 flex items-center">
-                Category
+                 {field.label}
                 <button
                   type="button"
-                  onClick={() => setActiveTooltip(activeTooltip === "category" ? null : "category")}
+                  onClick={() => setActiveTooltip(activeTooltip === `${field.name}` ? null : `${field.name}`)}
                   className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle category help"
+                  aria-label={`Toggle ${field.name} help`}
                 >
                   ?
                 </button>
               </label>
               <input
                 type="text"
-                name="category"
+                name={field.name}
                 className="border rounded px-2 py-1 text-sm"
-                placeholder="ex. Exercise"
-                value={createTaskFormik.values.category}
+                placeholder={field.placeholder}
+                value={createTaskFormik.values[field.name]}
                 onChange={createTaskFormik.handleChange}
                 onBlur={createTaskFormik.handleBlur}
               />
-              {createTaskFormik.touched.category &&
-                createTaskFormik.errors.category && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.duration}
-                  </div>
-                )}
-
-              {activeTooltip === "category" && (
+              {activeTooltip === `${field.name}` && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
                   onMouseLeave={() => setActiveTooltip(null)}
                 >
-                 Optional. Label this task (e.g., ‘Exercise’, ‘Work’, ‘Health’).
+                  {field.tooltip}
                 </div>
               )}
             </div>
 
-            {/* Duration  */}
-            <div className="flex flex-col relative">
-              <label className="text-sm font-medium mb-1 flex items-center">
-                Duration
-                <button
-                  type="button"
-                  onClick={() => setActiveTooltip(activeTooltip === "duration" ? null : "duration")}
-                  className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle duration help"
-                >
-                  ?
-                </button>
-              </label>
-              <input
-                type="text"
-                name="duration"
-                className="border rounded px-2 py-1 text-sm"
-                placeholder="ex. 1h 30m"
-                value={createTaskFormik.values.duration}
-                onChange={createTaskFormik.handleChange}
-                onBlur={createTaskFormik.handleBlur}
-              />
-              {createTaskFormik.touched.duration &&
-                createTaskFormik.errors.duration && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.duration}
-                  </div>
-                )}
-
-              {activeTooltip === "duration" && (
-                <div
-                  className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
-                  onMouseLeave={() => setActiveTooltip(null)}
-                >
-                 How much time you intend to spend on this task (e.g., ‘1h 30m’). Either duration or due date and time is required. Both are optional but at least one should be filled.
-                </div>
-              )}
-            </div>
-
+            ))}
+          
             {/* Due Date and Time */}
             <div className="flex flex-col relative">
               <label className="text-sm font-medium mb-1 flex items-center">
@@ -307,7 +299,7 @@ const CreateTask = () => {
                   type="button"
                   onClick={() => setActiveTooltip(activeTooltip === "due date and time" ? null : "due date and time")}
                   className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle due date help"
+                  aria-label="Toggle due date and time help"
                 >
                   ?
                 </button>
@@ -359,17 +351,11 @@ const CreateTask = () => {
                 onChange={createTaskFormik.handleChange}
                 onBlur={createTaskFormik.handleBlur}
               >
+                <option value="">Select Status</option>
                 <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
                 <option value="incomplete">incomplete</option>
               </select>
-              {createTaskFormik.touched.status &&
-                createTaskFormik.errors.status && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.status}
-                  </div>
-                )}
-
               {activeTooltip === "status" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
@@ -432,11 +418,6 @@ const CreateTask = () => {
                   </div>
                 )}
               </div>
-
-              {createTaskFormik.touched.color && createTaskFormik.errors.color && (
-                <div className="text-red-500 text-sm">{createTaskFormik.errors.color}</div>
-              )}
-
               {activeTooltip === "color" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
@@ -446,46 +427,6 @@ const CreateTask = () => {
                 </div>
               )}
             </div>
-
-            {/* Color Meaning */}
-            <div className="flex flex-col relative">
-              <label className="text-sm font-medium mb-1 flex items-center">
-                Color Meaning
-                <button
-                  type="button"
-                  onClick={() => setActiveTooltip(activeTooltip === "color meaning" ? null : "color meaning")}
-                  className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle color meaning help"
-                >
-                  ?
-                </button>
-              </label>
-              <input
-                type="text"
-                name="color meaning"
-                className="border rounded px-2 py-1 text-sm"
-                placeholder="ex. Difficulty or priority"
-                value={createTaskFormik.values.colorMeaning}
-                onChange={createTaskFormik.handleChange}
-                onBlur={createTaskFormik.handleBlur}
-              />
-              {createTaskFormik.touched.colorMeaning &&
-                createTaskFormik.errors.colorMeaning && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.colorMeaning}
-                  </div>
-                )}
-
-              {activeTooltip === "color meaning" && (
-                <div
-                  className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
-                  onMouseLeave={() => setActiveTooltip(null)}
-                >
-                Optional. Describe what this color represents (e.g., ‘Urgent’, ‘Creative Work’).
-                </div>
-              )}
-            </div>
-
             {/*Repeat*/}
             <div className="flex flex-col relative">
               <label className="text-sm font-medium mb-1 flex items-center">
@@ -512,13 +453,6 @@ const CreateTask = () => {
                 <option value="weekly">Weekly</option>
                 <option value="monhtly">Monthly</option>
               </select>
-              {createTaskFormik.touched.repeat &&
-                createTaskFormik.errors.repeat && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.repeat}
-                  </div>
-                )}
-
               {activeTooltip === "repeat" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
@@ -529,44 +463,54 @@ const CreateTask = () => {
               )}
             </div>
 
-            {/*Comments*/}
-             <div className="flex flex-col relative">
+            {/*Content*/}
+            <div className="flex flex-col relative sm:col-span-4">
               <label className="text-sm font-medium mb-1 flex items-center">
-                Comments
+                Content
                 <button
                   type="button"
-                  onClick={() => setActiveTooltip(activeTooltip === "comments" ? null : "comments")}
+                  onClick={() => setActiveTooltip(activeTooltip === "content" ? null : "content")}
                   className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle comment help"
+                  aria-label="Toggle content help"
                 >
                   ?
                 </button>
               </label>
-              <input
+              <textarea
                 type="text"
-                name="comments"
-                className="border rounded px-2 py-1 text-sm"
-                placeholder="ex. Increase weight"
-                value={createTaskFormik.values.repeat}
+                name="content"
+                className="border rounded px-2 py-1 text-sm min-h-[100px] resize-y w-full"
+                placeholder="e.g. 2 sets of bench press, 10 push-ups, and stretch"
+                maxLength={500}
+                value={createTaskFormik.values.content}
                 onChange={createTaskFormik.handleChange}
                 onBlur={createTaskFormik.handleBlur}
               />
-              {createTaskFormik.touched.comments &&
-                createTaskFormik.errors.comments && (
-                  <div className="text-red-500 text-sm">
-                    {createTaskFormik.errors.comments}
-                  </div>
-                )}
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {(createTaskFormik.values.content || "").length}/500
 
-              {activeTooltip === "comments" && (
+              </div>
+              {activeTooltip === "content" && (
                 <div
                   className="absolute z-10 bg-white border rounded p-2 mt-1 w-60 text-xs shadow-md"
                   onMouseLeave={() => setActiveTooltip(null)}
                 >
-                Optional. Add any notes, details, or reminders about this task.
+                  Optional. Detailed steps, notes, or specifics for completing the task."
                 </div>
               )}
             </div>
+            <div className="col-span-1 sm:col-span-4 flex justify-center mt-6">
+            <button
+              type="submit"
+              className="text-sm bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+              // disabled={createTaskFormik.isSubmitting || !createTaskFormik.isValid} // Remove this line
+            >
+              {/* You can keep or remove the conditional text */}
+              Create Task
+            </button>
+
+          </div>
+
           </form>
         ))}
     </div>

@@ -38,7 +38,7 @@ db = SQLAlchemy(metadata=metadata)
 
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
-CORS(app, cors_allowed_origins=['http://localhost:5174/'], supports_credentials=True)
+CORS(app, cors_allowed_origins=['http://localhost:5174'], supports_credentials=True)
 
 api = Api(app)
 

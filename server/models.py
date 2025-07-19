@@ -7,7 +7,7 @@ from config import db, bcrypt
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-tasks.user', '-dates.user')
+    serialize_rules = ('-tasks.user', '-dates.user', '-user.dates', '-user.tasks', '-date.tasks', '-tasks.date')
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, nullable=False, unique=True)
@@ -46,7 +46,7 @@ class User(db.Model, SerializerMixin):
 class Date(db.Model, SerializerMixin):
     __tablename__ = 'dates'
 
-    serialize_rules = ('-user.date', '-tasks.date')
+    serialize_rules = ('-user.date', '-tasks.date', '-dates.user', '-date.tasks', '-user.tasks','-tasks.user' )
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
@@ -58,7 +58,7 @@ class Date(db.Model, SerializerMixin):
 class Task(db.Model, SerializerMixin):
     __tablename__ = 'tasks'
 
-    serialize_rules = ('-user.task', '-date.task')
+    serialize_rules = ('-user.tasks', '-date.tasks')
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)  
@@ -70,6 +70,7 @@ class Task(db.Model, SerializerMixin):
     color_meaning = db.Column(db.String, nullable=True)
     repeat = db.Column(db.String, nullable=True)
     comments = db.Column(db.Text, nullable=True)
+    content = db.Column(db.Text, nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date_id = db.Column(db.Integer, db.ForeignKey('dates.id'), nullable=True)  
