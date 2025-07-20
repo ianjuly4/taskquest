@@ -27,7 +27,7 @@ const MyContextProvider = ({children}) =>{
     ) => {
     setLoading(true);
     setError(null);
-
+    console.log(formattedDate)
     const requestBody = {
       dateTime: formattedDate, 
       title,

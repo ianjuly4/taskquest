@@ -91,7 +91,8 @@ const CreateTask = () => {
       const formattedDueDateTime = values.dueDateTime
         ? values.dueDateTime.toISOString()
         : null;
-
+      console.log(formattedDate)
+      console.log(formattedDueDateTime)
       const success = await createTask(
         formattedDate,
         values.title,
@@ -105,7 +106,7 @@ const CreateTask = () => {
         values.comments,
         values.content
       );
-      if(result){
+      if(success){
         setDropdownOpen(false);
         createTaskFormik.resetForm()
       }
@@ -205,13 +206,17 @@ const CreateTask = () => {
                   type="button"
                   onClick={() => setActiveTooltip(activeTooltip === "dateTime" ? null : "dateTime")}
                   className="ml-2 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                  aria-label="Toggle date help"
+                  aria-label="Toggle dateTime help"
                 >
                   ?
                 </button>
               </label>
               <DatePicker
-                selected={createTaskFormik.values.dateTime}
+                selected={
+                  createTaskFormik.values.dateTime
+                    ? new Date(createTaskFormik.values.dateTime)
+                    : null
+                }
                 onChange={(dateTime) => createTaskFormik.setFieldValue("dateTime", dateTime)}
                 placeholderText="Task start"
                 dateFormat="yyyy/MM/dd h:mm aa"
@@ -458,7 +463,7 @@ const CreateTask = () => {
                 <option value="">None</option>
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
-                <option value="monhtly">Monthly</option>
+                <option value="monthly">Monthly</option>
               </select>
               {activeTooltip === "repeat" && (
                 <div

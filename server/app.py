@@ -2,14 +2,15 @@ from flask import Flask, render_template, request, make_response, session, send_
 from flask_restful import Api, Resource
 from config import app, db, bcrypt, migrate, api, os
 from models import User, Date, Task
-from datetime import datetime,timedelta
-from dateutil.relativedelta import relativedelta
-from dateutil.parser import parse
+from datetime import datetime, timezone
 
 @app.route('/')
 @app.route('/<path:path>')
 def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
+
+from datetime import datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 
 class Tasks(Resource):
     def post(self):
@@ -19,15 +20,23 @@ class Tasks(Resource):
         if not user_id:
             return make_response({"error": "Unauthorized. Please login."}, 401)
 
-        date_str = data.get("dateTime")
-        if not date_str:
-            return make_response({"error": "Date and time required."}, 400)
+        date_time_str = data.get("dateTime")
+        if not date_time_str:
+            return make_response({"error": "Start task date and time required."}, 400)
+
         try:
-            date_obj = parse(date_str)  # handles 'Z' and other ISO formats
+            if date_time_str.endswith("Z"):
+                date_time_str = date_time_str.replace("Z", "+00:00")
+                date_time = datetime.fromisoformat(date_time_str).replace(tzinfo=timezone.utc)
         except ValueError:
             return make_response({"error": "Invalid date format."}, 400)
 
-    
+        date_obj = Date.query.filter_by(date_time=date_time, user_id=user_id).first()
+        if not date_obj:
+            date_obj = Date(date_time=date_time, user_id=user_id)
+            db.session.add(date_obj)
+            db.session.flush()  
+
         due_datetime_str = data.get('dueDateTime')
         due_datetime = None
         if due_datetime_str:
@@ -40,30 +49,35 @@ class Tasks(Resource):
         repeated_tasks = []
 
         if repeat in ['daily', 'weekly', 'monthly']:
-          
             if repeat == 'daily':
-                repeat_range = [date_obj + timedelta(days=i) for i in range(30)]
+                delta = timedelta(days=1)
+                occurrences = 30
             elif repeat == 'weekly':
-                repeat_range = [date_obj + timedelta(weeks=i) for i in range(4)]
+                delta = timedelta(weeks=1)
+                occurrences = 4
             elif repeat == 'monthly':
-                repeat_range = [date_obj + relativedelta(months=i) for i in range(3)]
-
-            for task_date in repeat_range:
-                date_entry = Date.query.filter_by(date_time=task_date, user_id=user_id).first()
+                delta = relativedelta(months=1)
+                occurrences = 3
+            for i in range(occurrences):
+                if isinstance(delta, timedelta):
+                    task_date_time = date_time + delta * i
+                else: 
+                    task_date_time = date_time + relativedelta(months=i)
+                date_entry = Date.query.filter_by(date_time=task_date_time, user_id=user_id).first()
                 if not date_entry:
-                    date_entry = Date(date_time=task_date, user_id=user_id)
+                    date_entry = Date(date_time=task_date_time, user_id=user_id)
                     db.session.add(date_entry)
                     db.session.flush()
 
                 repeated_task = Task(
                     title=data.get('title'),
                     category=data.get('category'),
-                    duration_minutes=data.get('duration'),
-                    due_datetime=None,
-                    status=data.get('status'),
+                    duration_minutes=data.get(''),
+                    due_datetime=due_datetime,
+                    status=data.get('status', 'pending'),
                     color=data.get('color'),
                     color_meaning=data.get('colorMeaning'),
-                    repeat=None,  
+                    repeat=repeat,  
                     comments=data.get('comments'),
                     content=data.get('content'),
                     user_id=user_id,
@@ -77,32 +91,27 @@ class Tasks(Resource):
                 {"message": f"{len(repeated_tasks)} {repeat} repeating tasks created."},
                 201
             )
-        
-        date_entry = Date.query.filter_by(date_time=date_obj, user_id=user_id).first()
-        if not date_entry:
-            date_entry = Date(date_time=date_obj, user_id=user_id)
-            db.session.add(date_entry)
-            db.session.flush()
 
         new_task = Task(
             title=data.get('title'),
             category=data.get('category'),
             duration_minutes=data.get('duration'),
             due_datetime=due_datetime,
-            status=data.get('status'),
+            status=data.get('status', 'pending'),
             color=data.get('color'),
             color_meaning=data.get('colorMeaning'),
             repeat=repeat,
             comments=data.get('comments'),
             content=data.get('content'),
             user_id=user_id,
-            date_id=date_entry.id
+            date_id=date_obj.id
         )
 
         db.session.add(new_task)
         db.session.commit()
 
         return make_response(new_task.to_dict(), 201)
+
 api.add_resource(Tasks, '/tasks')
 
 class CheckSession(Resource):
@@ -167,6 +176,11 @@ class Users(Resource):
     def post(self):
         data = request.get_json()
 
+        user_id = session.get("user_id")
+        if user_id:
+            return jsonify({"message": "Cannot create new account while logged in"})
+
+
         if not data:
             return jsonify({"message": "Invalid data. No data provided."}), 400
 
@@ -186,7 +200,7 @@ class Users(Resource):
         db.session.add(new_user)
         db.session.commit()
 
-        return jsonify(new_user.to_dict(rules=('-_password_hash',))), 201
+        return new_user.to_dict(rules=('-_password_hash',)), 201
 
 api.add_resource(Users, '/users')
 

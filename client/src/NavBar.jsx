@@ -36,6 +36,19 @@ const NavBar = () => {
       }
     },
   });
+  const createFormik = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+    },
+    validationSchema: formSchema,
+    onSubmit: async (values) => {
+      const success = await signup(values.username, values.password);
+      if (success) {
+        setCreateDropDownOpen(false);
+      }
+    },
+  });
 
   const formattedDateTime = dateTime.toLocaleString();
 
@@ -59,7 +72,7 @@ const NavBar = () => {
               className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-20"
               onMouseLeave={()=>setCreateDropDownOpen(!createDropDownOpen)}
             >
-              <form onSubmit={loginFormik.handleSubmit}>
+              <form onSubmit={createFormik.handleSubmit}>
                 <label className="block mb-2 text-black font-semibold">
                   Username
                 </label>
