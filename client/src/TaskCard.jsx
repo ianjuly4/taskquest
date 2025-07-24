@@ -14,9 +14,10 @@ const TaskCard = ({ task }) => {
     dueLocalTime, 
   } = task;
 
+  console.log(task)
   return (
     <div
-      className="border-4 border-gray-300 black-text flex flex-col rounded-3xl p-4 mt-4 shadow-md"
+      className="border-4 border-gray-300 black-text flex flex-col rounded-3xl p-4  shadow-md"
       style={{ backgroundColor: color }}
     >
       <h1 className="text-xl font-bold mb-1">{title}</h1>
