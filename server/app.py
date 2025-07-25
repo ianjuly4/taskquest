@@ -72,7 +72,7 @@ class Tasks(Resource):
                 repeated_task = Task(
                     title=data.get('title'),
                     category=data.get('category'),
-                    duration_minutes=data.get(''),
+                    duration_minutes=data.get('duration'),
                     due_datetime=due_datetime,
                     status=data.get('status', 'pending'),
                     color=data.get('color'),
@@ -111,8 +111,48 @@ class Tasks(Resource):
         db.session.commit()
 
         return make_response(new_task.to_dict(), 201)
-
+    
 api.add_resource(Tasks, '/tasks')
+
+class TasksById(Resource):
+    def patch(self, id):
+        data = request.get_json()
+        task = task.query.filter(Task.id == id).first()
+        if not task:
+            return make_response({"message": "Task not found"}, 404)
+
+        for attr, value in data.items():
+            setattr(task, attr, value)
+
+        db.session.commit()
+        return make_response(task.to_dict(), 201)
+    
+    def delete(self, id):
+        delete_all = request.args.get('all', 'false').lower() == 'true'
+        
+        task = Task.query.filter(Task.id == id).first()
+        if not task:
+            return make_response({"message": "Task not found"}, 404)
+        
+        if delete_all and task.repeat:
+           
+            repeated_tasks = Task.query.filter_by(
+                user_id=task.user_id,
+                repeat=task.repeat,
+                title=task.title  
+            ).all()
+
+            for t in repeated_tasks:
+                db.session.delete(t)
+            db.session.commit()
+            return make_response({"message": f"Deleted {len(repeated_tasks)} repeated tasks"}, 200)
+        
+        # Delete single task only
+        db.session.delete(task)
+        db.session.commit()
+        return make_response({"message": "Task successfully deleted"}, 200)
+    
+api.add_resource(TasksById, "/tasks/<int:id>")
 
 class CheckSession(Resource):
     def get(self):
@@ -203,6 +243,15 @@ class Users(Resource):
         return new_user.to_dict(rules=('-_password_hash',)), 201
 
 api.add_resource(Users, '/users')
+
+class Dates(Resource):
+    def get(self):
+        date_dict_list = [date.to_dict() for date in Date.query.all()]
+        if date_dict_list:
+            return date_dict_list, 200
+        else:
+            return {"message": "No Dates Found"}, 404
+api.add_resource(Dates, '/dates')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

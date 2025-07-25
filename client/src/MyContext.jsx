@@ -11,6 +11,40 @@ const MyContextProvider = ({children}) =>{
   const [tasks, setTasks] = useState([])
   const [dates, setDates] = useState([])
 
+  //deleteTask
+  const deleteTask = (taskId, deleteAll = false) => {
+  setLoading(true);
+  setError(null);
+
+  fetch(`http://localhost:5555/tasks/${taskId}?all=${deleteAll}`, {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to delete task");
+      }
+      setUser((prevUser) => {
+        const updatedDates = prevUser.dates.map((date) => ({
+          ...date,
+          tasks: date.tasks.filter((task) => task.id !== taskId),
+        }));
+        return { ...prevUser, dates: updatedDates };
+      });
+      setError("Task deleted successfully!");
+    })
+    .catch((error) => {
+      setError(error.message + " Error deleting task. Please try again.");
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+};
+
+
+
   //createTask
   const createTask = (
     formattedDate,
@@ -204,7 +238,8 @@ const MyContextProvider = ({children}) =>{
         logout, 
         createTask, 
         tasks,
-        dates
+        dates,
+        deleteTask
       }}
     >
       {children}

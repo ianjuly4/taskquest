@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 
 const NavBar = () => {
-  const { error, login, logout, user, isLoggedIn } = useContext(MyContext);
+  const { error, login, logout, user, isLoggedIn, signup } = useContext(MyContext);
   const [loginDropDownOpen, setLoginDropDownOpen] = useState(false);
   const [createDropDownOpen, setCreateDropDownOpen] = useState(false)
   const [dateTime, setDateTime] = useState(new Date());
@@ -43,15 +43,17 @@ const NavBar = () => {
     },
     validationSchema: formSchema,
     onSubmit: async (values) => {
+      console.log("Signup form submitted with:", values.username);
       const success = await signup(values.username, values.password);
+      console.log("Signup success:", success);
       if (success) {
         setCreateDropDownOpen(false);
       }
-    },
+    }
   });
 
   const formattedDateTime = dateTime.toLocaleString();
-
+  
   
   return (
     <div className="text-sm font-medium flex items-center space-x-4 relative">
@@ -81,12 +83,12 @@ const NavBar = () => {
                   name="username"
                   placeholder="Username"
                   className="input input-bordered w-full mb-2"
-                  value={loginFormik.values.username}
-                  onChange={loginFormik.handleChange}
-                  onBlur={loginFormik.handleBlur}
+                  value={createFormik.values.username}
+                  onChange={createFormik.handleChange}
+                  onBlur={createFormik.handleBlur}
                 />
-                {loginFormik.touched.username && loginFormik.errors.username && (
-                  <div className="text-red-500 text-sm">{loginFormik.errors.username}</div>
+                {createFormik.touched.username && createFormik.errors.username && (
+                  <div className="text-red-500 text-sm">{createFormik.errors.username}</div>
                 )}
 
                 <label className="block mb-2 text-black font-semibold">
@@ -97,12 +99,12 @@ const NavBar = () => {
                   name="password"
                   placeholder="Password"
                   className="input input-bordered w-full mb-2"
-                  value={loginFormik.values.password}
-                  onChange={loginFormik.handleChange}
-                  onBlur={loginFormik.handleBlur}
+                  value={createFormik.values.password}
+                  onChange={createFormik.handleChange}
+                  onBlur={createFormik.handleBlur}
                 />
-                {loginFormik.touched.password && loginFormik.errors.password && (
-                  <div className="text-red-500 text-sm">{loginFormik.errors.password}</div>
+                {createFormik.touched.password && createFormik.errors.password && (
+                  <div className="text-red-500 text-sm">{createFormik.errors.password}</div>
                 )}
 
                 <button

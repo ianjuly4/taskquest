@@ -5,7 +5,10 @@ import TimeSlots from "./TimeSlots.jsx";
 
 const TaskContainer = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
- 
+  const { user } = useContext(MyContext)
+  const dates = user?.dates;
+  //console.log(dates)
+
   // Format header date
   const formattedDateHeader = currentDate.toLocaleDateString(undefined, {
     weekday: "long",
@@ -17,10 +20,12 @@ const TaskContainer = () => {
   return (
     <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[700px] flex flex-col">
       <h2 className="text-xl font-bold mb-4">{formattedDateHeader} Tasks:</h2>
+      {(dates?.length ?? 0) > 0 ? (
         <div className="flex-1 overflow-y-scroll">
-          <TimeSlots/>
-        </div>
+          <TimeSlots />
+        </div>) : (<div> Currently No Tasks Today</div>)}
     </div>
+
 
   )
 }
