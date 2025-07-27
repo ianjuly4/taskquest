@@ -1,12 +1,14 @@
 import React, {useState, useContext} from "react";
 import { MyContext } from "./MyContext";
 import TaskCard from "./TaskCard";
+import { DateSchema } from "yup";
 
 const TimeSlots = () =>{
     const { user, deleteTask } = useContext(MyContext);
     const [openTaskId, setOpenTaskId] = useState(null)
     const dates = user?.dates || []; 
    
+    console.log(dates)
 
     const timeSlots = Array.from({ length: 24 * 2}, (_, i)=>{
         const hour = Math.floor(i/2);

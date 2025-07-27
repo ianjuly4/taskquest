@@ -21,6 +21,7 @@ const MyContextProvider = ({children}) =>{
     headers: {
       "Content-type": "application/json",
     },
+    credentials: "include",
   })
     .then((response) => {
       if (!response.ok) {
@@ -41,9 +42,7 @@ const MyContextProvider = ({children}) =>{
     .finally(() => {
       setLoading(false);
     });
-};
-
-
+  };
 
   //createTask
   const createTask = (
@@ -81,27 +80,70 @@ const MyContextProvider = ({children}) =>{
       headers: {
         "Content-Type": "application/json",
       },
-      credentials: "include", 
+      credentials: "include",
       body: JSON.stringify(requestBody),
     })
-      .then(async (response) => {
-        const data = await response.json();
+    .then(async (response) => {
+      const data = await response.json();
+      console.log(data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create task");
+      }
+   
+      setUser(prevUser => {
+      let newTasks = [];
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to create task");
+      // Handle single or multiple tasks
+      if (Array.isArray(data.tasks)) {
+        newTasks = data.tasks;
+      } else {
+        newTasks = [data]; // Single task case
+      }
+      // Update existing dates or add new ones if needed
+      const updatedDates = [...prevUser.dates];
+
+      newTasks.forEach((task) => {
+        const taskDateStr = task.date.date_time.split(' ')[0];
+
+        const dateIndex = updatedDates.findIndex(
+          (d) => d.date_time.split(' ')[0] === taskDateStr
+        );
+
+        if (dateIndex !== -1) {
+          // Existing date, add task
+          const updatedTasks = [...(updatedDates[dateIndex].tasks || []), task];
+          updatedDates[dateIndex] = {
+            ...updatedDates[dateIndex],
+            tasks: updatedTasks,
+          };
+        } else {
+          // Date doesn't exist yet
+          updatedDates.push({
+            date_time: task.date_time,
+            id: task.date_id,
+            tasks: [task],
+          });
         }
-
-        setTasks((prevTasks) => [...prevTasks, data]);
-        return data;
-      })
-      .catch((error) => {
-        console.error("Task creation error:", error.message);
-        setError("Error creating task: " + error.message);
-      })
-      .finally(() => {
-        setLoading(false);
       });
-  };
+
+      return {
+        ...prevUser,
+        dates: updatedDates,
+      };
+    });
+
+
+      return true;
+    })
+    .catch((error) => {
+      console.error("Task creation error:", error.message);
+      setError("Error creating task: " + error.message);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  }
   
   //checksession
   useEffect(() => {

@@ -58,7 +58,7 @@ class Date(db.Model, SerializerMixin):
 class Task(db.Model, SerializerMixin):
     __tablename__ = 'tasks'
 
-    serialize_rules = ('-user.tasks', '-date.tasks')
+    serialize_rules = ('-user.tasks', '-date.tasks',)
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)  

@@ -21,9 +21,9 @@ app = Flask(
 )
 
 
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH = os.path.join(BASE_DIR, 'instance', 'app.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_PATH}"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'app.db')}"
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.json.compact = False
 

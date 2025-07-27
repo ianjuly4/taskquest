@@ -2,20 +2,21 @@ from flask import Flask, render_template, request, make_response, session, send_
 from flask_restful import Api, Resource
 from config import app, db, bcrypt, migrate, api, os
 from models import User, Date, Task
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 
 @app.route('/')
 @app.route('/<path:path>')
 def index(path=None):
     return send_from_directory(os.path.join(app.static_folder), 'index.html')
 
-from datetime import datetime, timezone, timedelta
-from dateutil.relativedelta import relativedelta
-
 class Tasks(Resource):
+    def get(self):
+        task_dict_list = [task.to_dict() for task in Task.query.all()]
+        return (task_dict_list, 200) if task_dict_list else ({"message": "No Tasks Found"}, 404)
+
     def post(self):
         data = request.get_json()
-
         user_id = session.get('user_id')
         if not user_id:
             return make_response({"error": "Unauthorized. Please login."}, 401)
@@ -27,7 +28,7 @@ class Tasks(Resource):
         try:
             if date_time_str.endswith("Z"):
                 date_time_str = date_time_str.replace("Z", "+00:00")
-                date_time = datetime.fromisoformat(date_time_str).replace(tzinfo=timezone.utc)
+            date_time = datetime.fromisoformat(date_time_str).replace(tzinfo=timezone.utc)
         except ValueError:
             return make_response({"error": "Invalid date format."}, 400)
 
@@ -35,13 +36,12 @@ class Tasks(Resource):
         if not date_obj:
             date_obj = Date(date_time=date_time, user_id=user_id)
             db.session.add(date_obj)
-            db.session.flush()  
+            db.session.flush()
 
-        due_datetime_str = data.get('dueDateTime')
         due_datetime = None
-        if due_datetime_str:
+        if data.get('dueDateTime'):
             try:
-                due_datetime = datetime.fromisoformat(due_datetime_str)
+                due_datetime = datetime.fromisoformat(data['dueDateTime'])
             except ValueError:
                 return make_response({"error": "Invalid format for dueDateTime."}, 400)
 
@@ -49,20 +49,15 @@ class Tasks(Resource):
         repeated_tasks = []
 
         if repeat in ['daily', 'weekly', 'monthly']:
-            if repeat == 'daily':
-                delta = timedelta(days=1)
-                occurrences = 30
-            elif repeat == 'weekly':
-                delta = timedelta(weeks=1)
-                occurrences = 4
-            elif repeat == 'monthly':
-                delta = relativedelta(months=1)
-                occurrences = 3
+            delta = {
+                'daily': timedelta(days=1),
+                'weekly': timedelta(weeks=1),
+                'monthly': relativedelta(months=1)
+            }[repeat]
+            occurrences = {'daily': 30, 'weekly': 4, 'monthly': 3}[repeat]
+
             for i in range(occurrences):
-                if isinstance(delta, timedelta):
-                    task_date_time = date_time + delta * i
-                else: 
-                    task_date_time = date_time + relativedelta(months=i)
+                task_date_time = date_time + (delta * i if isinstance(delta, timedelta) else relativedelta(months=i))
                 date_entry = Date.query.filter_by(date_time=task_date_time, user_id=user_id).first()
                 if not date_entry:
                     date_entry = Date(date_time=task_date_time, user_id=user_id)
@@ -77,7 +72,7 @@ class Tasks(Resource):
                     status=data.get('status', 'pending'),
                     color=data.get('color'),
                     color_meaning=data.get('colorMeaning'),
-                    repeat=repeat,  
+                    repeat=repeat,
                     comments=data.get('comments'),
                     content=data.get('content'),
                     user_id=user_id,
@@ -87,10 +82,11 @@ class Tasks(Resource):
                 repeated_tasks.append(repeated_task)
 
             db.session.commit()
-            return make_response(
-                {"message": f"{len(repeated_tasks)} {repeat} repeating tasks created."},
-                201
-            )
+            db.session.commit()
+            tasks_data = [task.to_dict() for task in repeated_tasks]
+            ##print([task.to_dict() for task in repeated_tasks])
+            return make_response({"tasks": tasks_data}, 201)
+
 
         new_task = Task(
             title=data.get('title'),
@@ -109,15 +105,18 @@ class Tasks(Resource):
 
         db.session.add(new_task)
         db.session.commit()
-
+        ##print(make_response(new_task.to_dict(), 201))
         return make_response(new_task.to_dict(), 201)
-    
+
 api.add_resource(Tasks, '/tasks')
+
+
 
 class TasksById(Resource):
     def patch(self, id):
         data = request.get_json()
-        task = task.query.filter(Task.id == id).first()
+
+        task = Task.query.filter(Task.id == id).first()
         if not task:
             return make_response({"message": "Task not found"}, 404)
 
@@ -126,58 +125,76 @@ class TasksById(Resource):
 
         db.session.commit()
         return make_response(task.to_dict(), 201)
-    
+
     def delete(self, id):
-        delete_all = request.args.get('all', 'false').lower() == 'true'
+        user_id = session.get('user_id')
         
-        task = Task.query.filter(Task.id == id).first()
+        if not user_id:
+            return make_response({"error": "Unauthorized. Please login."}, 401)
+
+        task = Task.query.filter(Task.id == id, Task.user_id == user_id).first()
         if not task:
             return make_response({"message": "Task not found"}, 404)
-        
-        if delete_all and task.repeat:
-           
-            repeated_tasks = Task.query.filter_by(
-                user_id=task.user_id,
-                repeat=task.repeat,
-                title=task.title  
-            ).all()
 
-            for t in repeated_tasks:
-                db.session.delete(t)
-            db.session.commit()
-            return make_response({"message": f"Deleted {len(repeated_tasks)} repeated tasks"}, 200)
+        delete_all_repeats = request.args.get('all', 'false').lower() == 'true'
         
-        # Delete single task only
-        db.session.delete(task)
+        delete_date_ids = set()
+        deleted_count = 0
+
+        if delete_all_repeats and task.repeat in ['daily', 'weekly', 'monthly']:
+            repeated_tasks = Task.query.filter_by(
+                user_id=user_id,
+                title=task.title,
+                repeat=task.repeat
+            ).all()
+            for t in repeated_tasks:
+                if t.date_id:
+                    delete_date_ids.add(t.date_id)
+                db.session.delete(t)
+                deleted_count += 1
+        else:
+            if task.date_id:
+                delete_date_ids.add(task.date_id)
+            db.session.delete(task)
+            deleted_count = 1
+
+        # Clean up empty Date entries
+        for date_id in delete_date_ids:
+            if Task.query.filter_by(date_id=date_id).count() == 0:
+                Date.query.filter_by(id=date_id).delete()
+
         db.session.commit()
-        return make_response({"message": "Task successfully deleted"}, 200)
-    
+
+        return make_response({
+            "message": f"Deleted {deleted_count} task(s).",
+            "repeating_tasks_deleted": delete_all_repeats
+        }, 200)
+
 api.add_resource(TasksById, "/tasks/<int:id>")
+
+
 
 class CheckSession(Resource):
     def get(self):
-        print(f"Session contents: {session}")
         user_id = session.get("user_id")
-
+        print(session)
         if not user_id:
             return make_response({"message": "No user currently logged in"}, 401)
 
         user = User.query.filter(User.id == user_id).first()
+        return make_response({'user': user.to_dict(rules=('-_password_hash',))}, 200) if user else make_response({"message": "User not found"}, 404)
 
-        if user:
-            return make_response({'user':user.to_dict(rules=('-_password_hash',))}, 200)
-        else:
-            return make_response({"message": "User not found"}, 404)
-        
 api.add_resource(CheckSession, "/check_session")
+
 
 class Logout(Resource):
     def delete(self):
         session.clear()
-        response = make_response({'message': 'Logged out successfully'}, 200)
-        return response
+        return make_response({'message': 'Logged out successfully'}, 200)
 
 api.add_resource(Logout, '/logout')
+
+
 
 class Login(Resource):
     def post(self):
@@ -185,41 +202,29 @@ class Login(Resource):
         username = data.get('username')
         password = data.get('password')
 
-        print(f"Login attempt for username: {username}")
-
         user = User.query.filter(User.username == username).first()
-
         if not user:
-            print(f"User not found: {username}")
             return make_response({'error': 'Username Not Found'}, 401)
-        else:
-            print(f"User found: {user.username}")
 
         if user.authenticate(password):
             session['user_id'] = user.id
-            print("Session after login:", dict(session))
             return make_response({'user': user.to_dict(rules=('-_password_hash',))}, 200)
         else:
-            print(f"Password mismatch for user {username}")
             return make_response({'error': 'Incorrect password'}, 401)
 
 api.add_resource(Login, "/login")
 
+
+
 class Users(Resource):
     def get(self):
-        user_dict_list = [user.to_dict() for user in User.query.all()]
-        if user_dict_list:
-            return user_dict_list, 200
-        else:
-            return {"message": "No Users Found"}, 404
-               
+        users = [user.to_dict() for user in User.query.all()]
+        return (users, 200) if users else ({"message": "No Users Found"}, 404)
+
     def post(self):
         data = request.get_json()
-
-        user_id = session.get("user_id")
-        if user_id:
+        if session.get("user_id"):
             return jsonify({"message": "Cannot create new account while logged in"})
-
 
         if not data:
             return jsonify({"message": "Invalid data. No data provided."}), 400
@@ -230,28 +235,27 @@ class Users(Resource):
         if not username or not password:
             return jsonify({"error": "Username and Password are required."}), 422
 
-        user = User.query.filter(User.username == username).first()
-        if user:
+        if User.query.filter_by(username=username).first():
             return jsonify({"error": "Username Already Taken."}), 422
 
         new_user = User(username=username)
-        new_user.password_hash = password  
-
+        new_user.password_hash = password
         db.session.add(new_user)
         db.session.commit()
-
         return new_user.to_dict(rules=('-_password_hash',)), 201
 
 api.add_resource(Users, '/users')
 
+
+
 class Dates(Resource):
     def get(self):
-        date_dict_list = [date.to_dict() for date in Date.query.all()]
-        if date_dict_list:
-            return date_dict_list, 200
-        else:
-            return {"message": "No Dates Found"}, 404
+        dates = [date.to_dict() for date in Date.query.all()]
+        return (dates, 200) if dates else ({"message": "No Dates Found"}, 404)
+
 api.add_resource(Dates, '/dates')
+
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
