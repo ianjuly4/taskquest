@@ -10,20 +10,21 @@ const TimeSlots = () =>{
    
     console.log(dates)
 
-    const timeSlots = Array.from({ length: 24 * 2}, (_, i)=>{
-        const hour = Math.floor(i/2);
-        const minutes = i % 2 === 0 ? "00" : "30";
+    const timeSlots = Array.from({ length: 24 *4 }, (_, i)=>{
+        const hour = Math.floor(i/4);
+        const quarter = i % 4;
+        const minutes = (quarter * 15).toString().padStart(2, '0')
         const time = new Date();
         time.setHours(hour)
         time.setMinutes(minutes)
         return time.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+            hour: "2-digit",
+            minute: "2-digit",
+        });
     })
 
     const now = new Date();
-    // Find today's date object that belongs to this user
+ 
     const today = dates.filter((d) => {
         const date = new Date(d.date_time.replace(" ", "T")+ "Z");
     

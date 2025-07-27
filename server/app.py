@@ -4,6 +4,7 @@ from config import app, db, bcrypt, migrate, api, os
 from models import User, Date, Task
 from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
+from uuid import uuid4
 
 @app.route('/')
 @app.route('/<path:path>')
@@ -49,6 +50,7 @@ class Tasks(Resource):
         repeated_tasks = []
 
         if repeat in ['daily', 'weekly', 'monthly']:
+            repeat_group_id=str(uuid4())
             delta = {
                 'daily': timedelta(days=1),
                 'weekly': timedelta(weeks=1),
@@ -75,6 +77,7 @@ class Tasks(Resource):
                     repeat=repeat,
                     comments=data.get('comments'),
                     content=data.get('content'),
+                    repeat_group_id=repeat_group_id,
                     user_id=user_id,
                     date_id=date_entry.id
                 )
@@ -84,7 +87,7 @@ class Tasks(Resource):
             db.session.commit()
             db.session.commit()
             tasks_data = [task.to_dict() for task in repeated_tasks]
-            ##print([task.to_dict() for task in repeated_tasks])
+           
             return make_response({"tasks": tasks_data}, 201)
 
 
@@ -100,12 +103,13 @@ class Tasks(Resource):
             comments=data.get('comments'),
             content=data.get('content'),
             user_id=user_id,
-            date_id=date_obj.id
+            date_id=date_obj.id,
+            repeat_group_id=None
         )
 
         db.session.add(new_task)
         db.session.commit()
-        ##print(make_response(new_task.to_dict(), 201))
+        
         return make_response(new_task.to_dict(), 201)
 
 api.add_resource(Tasks, '/tasks')
@@ -145,7 +149,7 @@ class TasksById(Resource):
             repeated_tasks = Task.query.filter_by(
                 user_id=user_id,
                 title=task.title,
-                repeat=task.repeat
+                repeat_group_id=task.repeat_group_id
             ).all()
             for t in repeated_tasks:
                 if t.date_id:

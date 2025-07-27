@@ -94,31 +94,43 @@ const MyContextProvider = ({children}) =>{
       setUser(prevUser => {
       let newTasks = [];
 
-      // Handle single or multiple tasks
+
       if (Array.isArray(data.tasks)) {
         newTasks = data.tasks;
       } else {
-        newTasks = [data]; // Single task case
+        newTasks = [data]; 
       }
-      // Update existing dates or add new ones if needed
+     
       const updatedDates = [...prevUser.dates];
 
       newTasks.forEach((task) => {
-        const taskDateStr = task.date.date_time.split(' ')[0];
+       const rawDateTime = task.date?.date_time || task.date_time;
 
-        const dateIndex = updatedDates.findIndex(
-          (d) => d.date_time.split(' ')[0] === taskDateStr
-        );
+          const taskDateStr =
+            typeof rawDateTime === "string" ? rawDateTime.split(" ")[0] : null;
+
+          if (!taskDateStr) {
+            // If no valid date string, skip this task (or handle differently if needed)
+            console.warn("Skipping task with invalid date_time:", task);
+            return;
+          }
+
+          // Find index of existing date entry matching this task's date (ignoring time)
+          const dateIndex = updatedDates.findIndex((d) => {
+            const dDateStr =
+              typeof d.date_time === "string" ? d.date_time.split(" ")[0] : null;
+            return dDateStr === taskDateStr;
+          });
 
         if (dateIndex !== -1) {
-          // Existing date, add task
+      
           const updatedTasks = [...(updatedDates[dateIndex].tasks || []), task];
           updatedDates[dateIndex] = {
             ...updatedDates[dateIndex],
             tasks: updatedTasks,
           };
         } else {
-          // Date doesn't exist yet
+        
           updatedDates.push({
             date_time: task.date_time,
             id: task.date_id,

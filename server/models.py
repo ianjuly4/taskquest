@@ -71,6 +71,7 @@ class Task(db.Model, SerializerMixin):
     repeat = db.Column(db.String, nullable=True)
     comments = db.Column(db.Text, nullable=True)
     content = db.Column(db.Text, nullable=True)
+    repeat_group_id = db.Column(db.String(36), nullable=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date_id = db.Column(db.Integer, db.ForeignKey('dates.id'), nullable=True)  
