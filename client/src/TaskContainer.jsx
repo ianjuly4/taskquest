@@ -5,9 +5,10 @@ import TimeSlots from "./TimeSlots.jsx";
 
 const TaskContainer = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [completedTasks, setCompletedTasks] = useState([])
   const { user, loading } = useContext(MyContext)
   const dates = user?.dates;
-  //console.log(dates)
+  console.log(user)
 
   // Format header date
   const formattedDateHeader = currentDate.toLocaleDateString(undefined, {
@@ -32,13 +33,15 @@ const TaskContainer = () => {
   const todayEntry = dates?.find((d) => isToday(d.date_time));
   const hasTasksToday = todayEntry && todayEntry.tasks && todayEntry.tasks.length > 0;
 
-  if (loading){
+
+  if (loading ){
     return(
-      <div className="items-center">
-        <h1 >Loading</h1>
+      <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[600px] flex flex-col items-center justify-center text-lg text-gray-600">
+        Loading......
       </div>
     )
   }
+
 
   return (
   <>
@@ -51,6 +54,7 @@ const TaskContainer = () => {
       </div>
     ) : (
       <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[600px] flex flex-col items-center justify-center text-lg text-gray-600">
+        <h2 className="text-xl font-bold mb-4">{formattedDateHeader} Tasks:</h2>
         Currently No Tasks Today
       </div>
     )}

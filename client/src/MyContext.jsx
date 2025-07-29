@@ -92,57 +92,54 @@ const MyContextProvider = ({children}) =>{
       }
    
       setUser(prevUser => {
-      let newTasks = [];
+        let newTasks = [];
 
 
-      if (Array.isArray(data.tasks)) {
-        newTasks = data.tasks;
-      } else {
-        newTasks = [data]; 
-      }
-     
-      const updatedDates = [...prevUser.dates];
-
-      newTasks.forEach((task) => {
-       const rawDateTime = task.date?.date_time || task.date_time;
-
-          const taskDateStr =
-            typeof rawDateTime === "string" ? rawDateTime.split(" ")[0] : null;
-
-          if (!taskDateStr) {
-            // If no valid date string, skip this task (or handle differently if needed)
-            console.warn("Skipping task with invalid date_time:", task);
-            return;
-          }
-
-          // Find index of existing date entry matching this task's date (ignoring time)
-          const dateIndex = updatedDates.findIndex((d) => {
-            const dDateStr =
-              typeof d.date_time === "string" ? d.date_time.split(" ")[0] : null;
-            return dDateStr === taskDateStr;
-          });
-
-        if (dateIndex !== -1) {
-      
-          const updatedTasks = [...(updatedDates[dateIndex].tasks || []), task];
-          updatedDates[dateIndex] = {
-            ...updatedDates[dateIndex],
-            tasks: updatedTasks,
-          };
+        if (Array.isArray(data.tasks)) {
+          newTasks = data.tasks;
         } else {
-        
-          updatedDates.push({
-            date_time: task.date_time,
-            id: task.date_id,
-            tasks: [task],
-          });
-        }
-      });
+          newTasks = [data]; 
+        }   
+        const updatedDates = prevUser.dates.map((d)=>({
+          ...d,
+          tasks: [...(d.tasks || [])],
+        }))
 
-      return {
-        ...prevUser,
-        dates: updatedDates,
-      };
+        newTasks.forEach((task) => {
+          const rawDateTime = task.date?.date_time || task.date_time;
+              const taskDateStr =
+                typeof rawDateTime === "string" ? rawDateTime.split(" ")[0] : null;
+
+              if (!taskDateStr) {
+            
+                console.warn("Skipping task with invalid date_time:", task);
+                return;
+              }
+
+              const dateIndex = updatedDates.findIndex((d) => {
+                const dDateStr =
+                  typeof d.date_time === "string" ? d.date_time.split(" ")[0] : null;
+                return dDateStr === taskDateStr;
+              });
+
+            if (dateIndex !== -1) {
+              updatedDates[dateIndex]={
+                ...updatedDates[dateIndex],
+                tasks: [...updatedDates[dateIndex].tasks, task],
+              };
+            } else {
+              updatedDates.push({
+                date_time: rawDateTime,
+                id: task.date_id,
+                tasks: [task],
+              });
+            }
+        });
+
+        return {
+          ...prevUser,
+          dates: updatedDates,
+        };
     });
 
 

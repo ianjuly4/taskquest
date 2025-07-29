@@ -222,7 +222,7 @@ api.add_resource(Login, "/login")
 
 class Users(Resource):
     def get(self):
-        users = [user.to_dict() for user in User.query.all()]
+        users = [user.to_dict(rules=('-_password_hash',)) for user in User.query.all()]
         return (users, 200) if users else ({"message": "No Users Found"}, 404)
 
     def post(self):
