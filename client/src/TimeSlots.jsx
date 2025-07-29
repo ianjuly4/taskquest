@@ -8,7 +8,7 @@ const TimeSlots = () =>{
     const [openTaskId, setOpenTaskId] = useState(null)
     const dates = user?.dates || []; 
    
-    console.log(dates)
+    //console.log(dates)
 
     const timeSlots = Array.from({ length: 24 *4 }, (_, i)=>{
         const hour = Math.floor(i/4);

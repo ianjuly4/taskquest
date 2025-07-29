@@ -293,7 +293,9 @@ const MyContextProvider = ({children}) =>{
         createTask, 
         tasks,
         dates,
-        deleteTask
+        deleteTask,
+        loading,
+        
       }}
     >
       {children}

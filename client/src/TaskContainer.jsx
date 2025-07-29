@@ -5,7 +5,7 @@ import TimeSlots from "./TimeSlots.jsx";
 
 const TaskContainer = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { user } = useContext(MyContext)
+  const { user, loading } = useContext(MyContext)
   const dates = user?.dates;
   //console.log(dates)
 
@@ -18,29 +18,43 @@ const TaskContainer = () => {
   });
 
   const isToday = (dateStr) => {
-  const date = new Date(dateStr.replace(" ", "T") + "Z");
-  const now = new Date();
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  );
+    if(!dateStr || typeof dateStr !== 'string') return false;
+
+    const date = new Date(dateStr.replace(" ", "T") + "Z");
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
+    );
   };
 
-const todayEntry = dates?.find((d) => isToday(d.date_time));
-const hasTasksToday = todayEntry && todayEntry.tasks && todayEntry.tasks.length > 0;
+  const todayEntry = dates?.find((d) => isToday(d.date_time));
+  const hasTasksToday = todayEntry && todayEntry.tasks && todayEntry.tasks.length > 0;
+
+  if (loading){
+    return(
+      <div className="items-center">
+        <h1 >Loading</h1>
+      </div>
+    )
+  }
 
   return (
-    <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[700px] flex flex-col">
-      <h2 className="text-xl font-bold mb-4">{formattedDateHeader} Tasks:</h2>
-      {hasTasksToday ? (
+  <>
+    {hasTasksToday ? (
+      <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[600px] flex flex-col">
+        <h2 className="text-xl font-bold mb-4">{formattedDateHeader} Tasks:</h2>
         <div className="flex-1 overflow-y-scroll">
           <TimeSlots />
-        </div>) : (<div> Currently No Tasks Today</div>)}
-    </div>
-
-
-  )
+        </div>
+      </div>
+    ) : (
+      <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[600px] flex flex-col items-center justify-center text-lg text-gray-600">
+        Currently No Tasks Today
+      </div>
+    )}
+  </>
+  );
 }
-
 export default TaskContainer;

@@ -34,7 +34,7 @@ const CreateTask = () => {
     color: yup
       .string()
       .oneOf([
-        "", "#EF4444", "#10B981", "#3B82F6", "#FACC15", "#8B5CF6",
+        "", 
         "#FF6961", "#FFD580", "#ACE7EF", "#A0CED9", "#CBAACB", "#FFB7B2", "#D0F0C0"
       ], "Select a valid color"),
     colorMeaning: yup
@@ -119,11 +119,6 @@ const CreateTask = () => {
 
   const colorOptions = [
     { name: "None", value: ""},
-    { name: "Red", value: "#EF4444" },
-    { name: "Green", value: "#10B981" },
-    { name: "Blue", value: "#3B82F6" },
-    { name: "Yellow", value: "#FACC15" },
-    { name: "Purple", value: "#8B5CF6" },
     { name: "Pastel Red", value: "#FF6961" },
     { name: "Pastel Orange", value: "#FFD580" },
     { name: "Pastel Teal", value: "#ACE7EF" },
