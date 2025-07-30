@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const TaskCard = ({ task, deleteTask, isOpen, onToggle }) => {
+const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) => {
   const {
     id,
     title,
@@ -133,7 +133,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle }) => {
             {timeLeft && (
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <p><strong>Time Remaining: </strong>{timeLeft}</p>
-                <button className="bg-green-500 text-white px-3 py-1 rounded-md shadow text-sm">
+                <button className="bg-green-500 text-white px-3 py-1 rounded-md shadow text-sm" onClick={()=>handleCompleteTask(task.id)}>
                   Complete
                 </button>
               </div>

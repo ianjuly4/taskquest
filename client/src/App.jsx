@@ -4,6 +4,7 @@ import Account from './Account';
 import TaskContainer from "./TaskContainer"
 import Header from './Header';
 import CreateTask from './CreateTask';
+import PhaserGame from './PhaserGame';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <div className="mt-4">
         <TaskContainer />
       </div>
+        <PhaserGame/>
     </div>
 
   );

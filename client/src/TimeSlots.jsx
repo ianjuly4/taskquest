@@ -3,7 +3,7 @@ import { MyContext } from "./MyContext";
 import TaskCard from "./TaskCard";
 import { DateSchema } from "yup";
 
-const TimeSlots = () =>{
+const TimeSlots = ({handleCompleteTask}) =>{
     const { user, deleteTask } = useContext(MyContext);
     const [openTaskId, setOpenTaskId] = useState(null)
     const dates = user?.dates || []; 
@@ -70,6 +70,7 @@ const TimeSlots = () =>{
                             task={task}
                             deleteTask={deleteTask}
                             isOpen={openTaskId === task.id}
+                            handleCompleteTask={handleCompleteTask}
                             onToggle={() =>
                                 setOpenTaskId(openTaskId === task.id ? null : task.id)
                             }

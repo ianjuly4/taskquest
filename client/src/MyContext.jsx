@@ -2,7 +2,6 @@ import React, { createContext, useState, useEffect } from "react";
 
 const MyContext = createContext();
 
-
 const MyContextProvider = ({children}) =>{
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -8,7 +8,6 @@ const TaskContainer = () => {
   const [completedTasks, setCompletedTasks] = useState([])
   const { user, loading } = useContext(MyContext)
   const dates = user?.dates;
-  console.log(user)
 
   // Format header date
   const formattedDateHeader = currentDate.toLocaleDateString(undefined, {
@@ -31,8 +30,11 @@ const TaskContainer = () => {
   };
 
   const todayEntry = dates?.find((d) => isToday(d.date_time));
-  const hasTasksToday = todayEntry && todayEntry.tasks && todayEntry.tasks.length > 0;
-
+  const hasTasksToday = todayEntry && todayEntry.tasks && todayEntry.tasks.length > 0
+  
+  console.log(todayEntry)
+  const taskLength = todayEntry?.tasks?.length || 0
+  console.log(taskLength)
 
   if (loading ){
     return(
@@ -42,14 +44,21 @@ const TaskContainer = () => {
     )
   }
 
+  const handleCompleteTask = (task)=>{
+    console.log(task)
+    setCompletedTasks((prevTasks) => [...prevTasks, task]);
+  }
 
   return (
   <>
     {hasTasksToday ? (
       <div className="border-4 border-gray-300 black-text rounded-3xl p-6 h-[600px] flex flex-col">
-        <h2 className="text-xl font-bold mb-4">{formattedDateHeader} Tasks:</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold ">{formattedDateHeader} Tasks:</h2>
+          <h2 className="text-m font-bold text-gray-600">Completed:  {completedTasks} / {taskLength} </h2>
+        </div>
         <div className="flex-1 overflow-y-scroll">
-          <TimeSlots />
+          <TimeSlots handleCompleteTask={handleCompleteTask} />
         </div>
       </div>
     ) : (
