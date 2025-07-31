@@ -8,7 +8,8 @@ import PhaserGame from './PhaserGame';
 
 function App() {
   return (
-    <div className="min-h-[600px] max-w-3xl  mx-auto border-4 border-gray-300 flex flex-col rounded-3xl p-6">
+    <div className="max-w-3xl mx-auto flex flex-col rounded-3xl p-6 overflow-hidden h-screen">
+
       <Header />
        <div className="mt-4">
         <CreateTask/>

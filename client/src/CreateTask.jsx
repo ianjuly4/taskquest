@@ -14,6 +14,7 @@ const CreateTask = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+
   const formSchema = yup.object().shape({
     dateTime: yup
       .date()
@@ -91,8 +92,11 @@ const CreateTask = () => {
       const formattedDueDateTime = values.dueDateTime
         ? values.dueDateTime.toISOString()
         : null;
-      console.log(formattedDate)
-      console.log(formattedDueDateTime)
+
+      //console.log(formattedDate)
+      //console.log(formattedDueDateTime)
+
+
       const success = await createTask(
         formattedDate,
         values.title,

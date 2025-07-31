@@ -6,8 +6,9 @@ const PhaserGame = () =>{
     useEffect(()=>{
         const config = {
             type: Phaser.AUTO,
-            width: 600,
-            height: 200,
+            width: 300,
+            height: 100,
+            backgroundColor:  "#D1D5DB",
             parent: "phaser-container",
             physics: {
                 default: "arcade",
@@ -16,7 +17,9 @@ const PhaserGame = () =>{
                 debug: false,
                 },
             },
-            scene: [Quest],
+            scene: [
+                //Quest
+                ],
             };
 
             const game = new Phaser.Game(config);
@@ -26,7 +29,16 @@ const PhaserGame = () =>{
             };
         }, []);
 
-  return <div id="phaser-container" className="w-full bg-gray-300 text-black border-4 border-gray-300 rounded-3xl p-4"></div>
+  return (
+    <div
+        id="phaser-container"
+        className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
+    >
+    </div>
+
+  
+    )
 };
+
 
 export default PhaserGame;

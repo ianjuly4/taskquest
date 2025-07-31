@@ -58,69 +58,15 @@ const NavBar = () => {
   return (
     <div className="text-sm font-medium flex items-center space-x-4 relative">
       {/* Current Time */}
-      <div>{formattedDateTime}</div>
+      
 
-      {/*Create Account */}
-      <div className="flex items-center space-x-2">
-          <button
-            className="bg-white text-black px-2 py-2 rounded-lg shadow"
-            onClick={()=>setCreateDropDownOpen(!createDropDownOpen)}
-          >
-            Create Account
-          </button>
-        </div>
-      {createDropDownOpen && (
-            <div
-              className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-300 rounded-lg shadow-lg p-4 z-20"
-              onMouseLeave={()=>setCreateDropDownOpen(!createDropDownOpen)}
-            >
-              <form onSubmit={createFormik.handleSubmit}>
-                <label className="block mb-2 text-black font-semibold">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  className="input input-bordered w-full mb-2"
-                  value={createFormik.values.username}
-                  onChange={createFormik.handleChange}
-                  onBlur={createFormik.handleBlur}
-                />
-                {createFormik.touched.username && createFormik.errors.username && (
-                  <div className="text-red-500 text-sm">{createFormik.errors.username}</div>
-                )}
-
-                <label className="block mb-2 text-black font-semibold">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  className="input input-bordered w-full mb-2"
-                  value={createFormik.values.password}
-                  onChange={createFormik.handleChange}
-                  onBlur={createFormik.handleBlur}
-                />
-                {createFormik.touched.password && createFormik.errors.password && (
-                  <div className="text-red-500 text-sm">{createFormik.errors.password}</div>
-                )}
-
-                <button
-                  type="submit"
-                  className="w-full bg-green-700 text-white py-2 rounded hover:bg-blue-700"
-                >
-                  Enter
-                </button>
-                {error && (
-                  <div className="text-red-500 text-xs mt-2 text-center">{error}</div>
-                )}
-              </form>
-            </div>
-          )}
-       
-
+       {/* NavLink to Home Page */}
+      <NavLink to="/">
+        <button className="bg-white text-black px-2 py-2 rounded-lg shadow">
+          Home
+        </button>
+      </NavLink>
+   
       {/* Auth Buttons */}
       {isLoggedIn && user ? (
         <div className="flex items-center space-x-2">
@@ -136,7 +82,10 @@ const NavBar = () => {
         <>
           <button
             className="bg-white text-black px-2 py-2 rounded-lg shadow"
-            onClick={()=>setLoginDropDownOpen(!loginDropDownOpen)}
+            onClick={()=>
+              {console.log("Login button clicked")
+              setLoginDropDownOpen(!loginDropDownOpen)
+              }}
           >
             Login
           </button>
