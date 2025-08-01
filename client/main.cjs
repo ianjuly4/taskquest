@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, screen } = require('electron');
 const path = require('path');
 
 const isDev = !app.isPackaged;
@@ -8,11 +8,20 @@ require('electron-reload')(__dirname, {
   hardResetMethod: 'exit'
 });
 
-
 function createWindow() {
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+
+  const winWidth = 460;
+  const winHeight = 1050;
+
+  const x = screenWidth - winWidth;
+  const y = 0; 
+
   const win = new BrowserWindow({
-    width: 460,     
-    height: 920,
+    x,
+    y,
+    width: winWidth,
+    height: winHeight,
     resizable: true,
     frame: false,
     alwaysOnTop: true,
@@ -21,7 +30,7 @@ function createWindow() {
       contextIsolation: false,
       nodeIntegration: true,
     },
-});
+  });
 
   win.setMenuBarVisibility(false); 
 

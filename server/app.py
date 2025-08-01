@@ -39,68 +39,11 @@ class Tasks(Resource):
             db.session.add(date_obj)
             db.session.flush()
 
-        due_datetime = None
-        if data.get('dueDateTime'):
-            try:
-                due_datetime = datetime.fromisoformat(data['dueDateTime'])
-            except ValueError:
-                return make_response({"error": "Invalid format for dueDateTime."}, 400)
-
-        repeat = data.get('repeat')
-        repeated_tasks = []
-
-        if repeat in ['daily', 'weekly', 'monthly']:
-            repeat_group_id=str(uuid4())
-            delta = {
-                'daily': timedelta(days=1),
-                'weekly': timedelta(weeks=1),
-                'monthly': relativedelta(months=1)
-            }[repeat]
-            occurrences = {'daily': 30, 'weekly': 4, 'monthly': 3}[repeat]
-
-            for i in range(occurrences):
-                task_date_time = date_time + (delta * i if isinstance(delta, timedelta) else relativedelta(months=i))
-                date_entry = Date.query.filter_by(date_time=task_date_time, user_id=user_id).first()
-                if not date_entry:
-                    date_entry = Date(date_time=task_date_time, user_id=user_id)
-                    db.session.add(date_entry)
-                    db.session.flush()
-
-                repeated_task = Task(
-                    title=data.get('title'),
-                    category=data.get('category'),
-                    duration_minutes=data.get('duration'),
-                    due_datetime=due_datetime,
-                    status=data.get('status', 'pending'),
-                    color=data.get('color'),
-                    color_meaning=data.get('colorMeaning'),
-                    repeat=repeat,
-                    comments=data.get('comments'),
-                    content=data.get('content'),
-                    repeat_group_id=repeat_group_id,
-                    user_id=user_id,
-                    date_id=date_entry.id
-                )
-                db.session.add(repeated_task)
-                repeated_tasks.append(repeated_task)
-
-            db.session.commit()
-            db.session.commit()
-            tasks_data = [task.to_dict() for task in repeated_tasks]
-           
-            return make_response({"tasks": tasks_data}, 201)
-
-
         new_task = Task(
             title=data.get('title'),
-            category=data.get('category'),
-            duration_minutes=data.get('duration'),
-            due_datetime=due_datetime,
+            duration=data.get('duration'),
             status=data.get('status', 'pending'),
             color=data.get('color'),
-            color_meaning=data.get('colorMeaning'),
-            repeat=repeat,
-            comments=data.get('comments'),
             content=data.get('content'),
             user_id=user_id,
             date_id=date_obj.id,

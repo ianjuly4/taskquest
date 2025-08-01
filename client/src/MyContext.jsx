@@ -47,30 +47,20 @@ const MyContextProvider = ({children}) =>{
   const createTask = (
     formattedDate,
     title,
-    category,
     totalMinutes,
-    formattedDueDateTime,
     status,
     color,
-    colorMeaning,
-    repeat,
-    comments,
     content
     ) => {
     setLoading(true);
     setError(null);
-    console.log(formattedDate)
+
     const requestBody = {
       dateTime: formattedDate, 
       title,
-      category,
       duration: totalMinutes, 
-      dueDateTime: formattedDueDateTime, 
       status,
       color,
-      colorMeaning,
-      repeat,
-      comments,
       content
     };
 
