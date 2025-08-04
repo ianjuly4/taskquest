@@ -86,47 +86,20 @@ class TasksById(Resource):
 
     def delete(self, id):
         user_id = session.get('user_id')
-        
+
         if not user_id:
             return make_response({"error": "Unauthorized. Please login."}, 401)
-
-        task = Task.query.filter(Task.id == id, Task.user_id == user_id).first()
+        
+        user = User.query.filter(User.id == user_id).first()
+        
+        task = Task.query.filter(Task.id == id).first()
         if not task:
             return make_response({"message": "Task not found"}, 404)
-
-        delete_all_repeats = request.args.get('all', 'false').lower() == 'true'
         
-        delete_date_ids = set()
-        deleted_count = 0
-
-        if delete_all_repeats and task.repeat in ['daily', 'weekly', 'monthly']:
-            repeated_tasks = Task.query.filter_by(
-                user_id=user_id,
-                title=task.title,
-                repeat_group_id=task.repeat_group_id
-            ).all()
-            for t in repeated_tasks:
-                if t.date_id:
-                    delete_date_ids.add(t.date_id)
-                db.session.delete(t)
-                deleted_count += 1
-        else:
-            if task.date_id:
-                delete_date_ids.add(task.date_id)
-            db.session.delete(task)
-            deleted_count = 1
-
-        # Clean up empty Date entries
-        for date_id in delete_date_ids:
-            if Task.query.filter_by(date_id=date_id).count() == 0:
-                Date.query.filter_by(id=date_id).delete()
-
+        db.session.delete(task)
         db.session.commit()
-
-        return make_response({
-            "message": f"Deleted {deleted_count} task(s).",
-            "repeating_tasks_deleted": delete_all_repeats
-        }, 200)
+        return make_response(user.to_dict(), 200)
+    
 
 api.add_resource(TasksById, "/tasks/<int:id>")
 

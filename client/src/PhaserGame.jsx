@@ -1,8 +1,10 @@
-import React, {useEffect} from "react"
+import React, {useEffect, useContext} from "react"
 import Phaser from "phaser"
 import Quest from "./Quest"
+import { MyContext } from "./MyContext";
 
 const PhaserGame = () =>{
+    const {user} = useContext(MyContext)
     useEffect(()=>{
         const config = {
             type: Phaser.AUTO,

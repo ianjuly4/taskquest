@@ -4,7 +4,7 @@ import TaskCard from "./TaskCard";
 import { DateSchema } from "yup";
 
 const TimeSlots = ({handleCompleteTask}) =>{
-    const { user, deleteTask } = useContext(MyContext);
+    const { user, deleteTask, updateTask } = useContext(MyContext);
     const [openTaskId, setOpenTaskId] = useState(null)
     const dates = user?.dates || []; 
    
@@ -34,10 +34,7 @@ const TimeSlots = ({handleCompleteTask}) =>{
         date.getDate() === now.getDate()
         );
     });
-    //console.log("Today's matched date object:", today);
-   
-    //console.log(today?.tasks)
-    const time = today?.date_time;
+
     const todayTasks = today.flatMap((d) =>
         (d.tasks || []).map((task) => ({
         ...task,
@@ -45,45 +42,66 @@ const TimeSlots = ({handleCompleteTask}) =>{
         }))
     );
     
-    return(
-       <div className="w-full h-[400px] overflow-y-auto border border-gray-300 rounded-md p-2">
-            {timeSlots.map((slot, index) => {
-                const tasksForSlot = todayTasks.filter((task)=>{
-                    const taskTime = task.startTime.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    });
-                    
-                    return taskTime === slot
-                }) || [];
-                
-                return(
-                <div key={index} className="grid grid-cols-[1fr_auto] items-start border-t border-gray-200 px-2 min-h-[48px]">
-                    <div className="flex-grow">
-                        {tasksForSlot.map((task) => (
-                        <div
-                            key={task.id} 
-                            className={openTaskId === task.id ? "relative z-40" : ""}
-                        >
-                            <TaskCard
+    return (
+        <div className="relative w-full max-h-[400px] overflow-y-auto overflow-x-hidden border border-gray-300 rounded-md p-2 pb-24">
+            {/* Background time slots */}
+            <div>
+                {timeSlots.map((slot, index) => (
+                    <div
+                        key={index}
+                        className="border-t border-gray-200 min-h-[48px] flex justify-between px-2"
+                        style={{ height: "48px" }}
+                    >
+                        <div className="flex-grow"></div>
+                        <div className="text-xs text-gray-500 w-12 text-right pl-2">
+                            {slot}
+                        </div>
+                    </div>
+                ))}
+            </div>
+            
+            {/* Absolute-positioned TaskCards */}
+            {todayTasks.map((task) => {
+                const start = task.startTime;
+                const startHour = start.getHours();
+                const startMinutes = start.getMinutes();
+                const startIndex = startHour * 4 + Math.floor(startMinutes / 15);
+                const top = startIndex * 48;
+
+                // Fallback duration: 15 mins (1 slot)
+                const duration = task.duration || 15;
+                const durationSlots = Math.ceil(duration / 15);
+                const baseHeight = durationSlots * 48;
+
+                const height = openTaskId === task.id ? "auto" : `${baseHeight}px`;
+
+                return (
+                    <div
+                        key={task.id}
+                        className={`absolute left-0 right-10 px-2 ${openTaskId === task.id ? "z-40" : ""}`}
+                        style={{
+                            top: `${top}px`,
+                            minHeight: `${baseHeight}px`,
+                            height: height,
+                        }}
+                    >
+                        <TaskCard
                             task={task}
                             deleteTask={deleteTask}
                             isOpen={openTaskId === task.id}
                             handleCompleteTask={handleCompleteTask}
+                            updateTask={updateTask}
                             onToggle={() =>
                                 setOpenTaskId(openTaskId === task.id ? null : task.id)
                             }
-                            />
-                        </div>
-                        ))}
+                        />
                     </div>
-                    <div className="text-xs text-gray-500 w-10 text-right shrink-0">
-                        {slot}
-                    </div>
-                </div>
-                )
-            })}  
+    );
+})}
+
+          
         </div>
-    )
-}
-export default TimeSlots
+    );
+};
+
+export default TimeSlots;

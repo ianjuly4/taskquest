@@ -5,9 +5,9 @@ import TimeSlots from "./TimeSlots.jsx";
 
 const TaskContainer = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [completedTasks, setCompletedTasks] = useState([])
-  const { user, loading } = useContext(MyContext)
+  const { user, loading, updateTask } = useContext(MyContext)
   const dates = user?.dates;
+  
 
   // Format header date
   const formattedDateHeader = currentDate.toLocaleDateString(undefined, {
@@ -31,9 +31,10 @@ const TaskContainer = () => {
 
   const todayEntries = dates?.filter((d) => isToday(d.date_time)) || [];
   const allTodaysTasks = todayEntries.flatMap((entry) => entry.tasks || []);
-
+  const completed = allTodaysTasks.filter((task)=>task.status === "completed")
   const hasTasksToday = allTodaysTasks.length > 0;
   const taskLength = allTodaysTasks.length;
+
 
   if (loading ){
     return(
@@ -43,10 +44,12 @@ const TaskContainer = () => {
     )
   }
 
-  const handleCompleteTask = (task)=>{
-    console.log(task)
-    setCompletedTasks((prevTasks) => [...prevTasks, task]);
+  const handleCompleteTask = (task, values)=>{
+    console.log(task, values)
+    updateTask(task, values)
+   
   }
+
 
   return (
   <>
@@ -55,7 +58,7 @@ const TaskContainer = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">{formattedDateHeader} Tasks:</h2>
           <h2 className="text-m font-bold text-gray-600">
-            Completed: {completedTasks.length} / {taskLength}
+            Completed: {completed.length} / {taskLength}
           </h2>
         </div>
         <div className="flex-1 overflow-auto">

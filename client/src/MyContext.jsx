@@ -53,7 +53,7 @@ const MyContextProvider = ({children}) =>{
       body: JSON.stringify(values)
     })
     .then(async (response) => {
-      const data = await response.json();
+      const data = await response.json(); 
       console.log(data);
       
       if (!response.ok) {
@@ -265,6 +265,7 @@ const MyContextProvider = ({children}) =>{
         deleteTask,
         loading,
         dateTime,
+        updateTask
 
       }}
     >

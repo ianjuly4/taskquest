@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) => {
+const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleCompleteTask }) => {
   const {
     id,
     title,
@@ -12,6 +12,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
   } = task;
 
   const [timeLeft, setTimeLeft] = useState(null)
+
   const handleDelete = () => {
     deleteTask(task.id);
   };
@@ -24,12 +25,14 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
 
   const interval = setInterval(() => {
     const now = new Date();
-
     const diff = end.getTime() - now.getTime(); 
 
     if (diff <= 0) {
       setTimeLeft("0m");
       clearInterval(interval);
+      if(status !== "completed" && status !== "incomplete"){
+        updateTask(task.id, {status: "incomplete"})
+      }
     } else {
       const totalMinutes = Math.floor(diff / 60000);
       const seconds = Math.floor((diff % 60000) / 1000);
@@ -74,39 +77,12 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
 
   return (
     <div
-      className="relative border-4 border-gray-300 black-text flex flex-col rounded-3xl p-4 shadow-md"
-      style={{ backgroundColor: color }}
+      className="relative border-4 border-gray-300 black-text flex flex-col rounded-3xl p-4 shadow-md space-y-2 overflow-hidden"
+      style={{ backgroundColor: color, height: "100%" }}
     >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold">{title}</h1>
-          {startTime && (
-            <div className="text-sm text-gray-700 flex space-x-4">
-              <p>
-                <strong>Starts: </strong>{" "}
-                {new Date(startTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })} 
-              </p>
-             
-                <p>
-                  <strong>Ends: </strong>
-                  {calculateEndTime(startTime, duration).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-          
-                  {status && (
-                    <p>
-                      <strong>Status: </strong>{status}
-                    </p>
-                  )}
-            </div>
-        )}
-      </div>
+      {/* Title */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-lg font-bold">{title}</h1>
         <button
           type="button"
           className="text-black text-2xl font-bold"
@@ -117,41 +93,63 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
         </button>
       </div>
 
-      {/* Expanded Content */}
+      {/* Metadata */}
+      {startTime && (
+        <div className="text-sm text-gray-700 space-y-1">
+          <p><strong>Starts:</strong> {new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+          <p><strong>Ends:</strong> {calculateEndTime(startTime, duration).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+          <p><strong>Status:</strong> {status}</p>
+        </div>
+      )}
+
+      {/* Expanded Fields */}
       {isOpen && (
         <>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-800 mb-4">
-           
-            <p>• Duration: {formatDuration(duration) || "N/A"} min</p>
-            {content && <p>• Content: {content}</p>}
+          {/* Editable Content Input */}
+          <div className="mt-2">
+            <label className="text-sm font-medium text-gray-700 block mb-1">Notes:</label>
+            <input
+              type="text"
+              value={task.content || ""}
+              onChange={(e) =>
+                updateTask(task.id, { content: e.target.value })
+              }
+              className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              placeholder="Add task notes..."
+            />
           </div>
-          {content && (
-            <p className="text-sm text-gray-900 mb-4">
-              <span className="font-medium">Note:</span> {content}
-            </p>
-          )}
 
-          {/* Complete/Delete Button */}
-          <div className="flex justify-between items-center mt-4 w-full">
-            {timeLeft && (
-              <div className="flex flex-col space-y-2 text-sm text-gray-700 ml-auto">
-                <p><strong>Time Remaining: </strong>{timeLeft}</p>
-                <button className="bg-green-500 text-white px-3 py-1 rounded-md shadow text-sm" onClick={()=>handleCompleteTask(task.id)}>
+          {/* Duration */}
+          <p className="text-sm text-gray-800 mt-2">
+            <strong>Duration:</strong> {formatDuration(duration) || "N/A"}
+          </p>
+
+          {/* Controls */}
+          <div className="flex justify-end items-center space-x-3 mt-4">
+            {status !== "completed" && status !=="incomplete" && timeLeft && (
+              <>
+                <p className="text-sm text-gray-700">
+                  <strong>Time Left:</strong> {timeLeft}
+                </p>
+                <button
+                  className="bg-green-500 text-white px-3 py-1 rounded-md shadow text-sm"
+                  onClick={() => handleCompleteTask(task.id, { status: "completed" })}
+                >
                   Complete
                 </button>
-                <button className ="bg-red-400 text-white px-3 py-1 rounded-md shadow text-sm" onClick={()=>handleCompleteTask(task.id)}>
-                  Delete
-                </button>
-              </div>
+              </>
             )}
-          
+            <button
+              className="bg-red-400 text-white px-3 py-1 rounded-md shadow text-sm"
+              onClick={() => handleDelete(task.id)}
+            >
+              Delete
+            </button>
           </div>
-
-         
         </>
       )}
-    </div>
-  );
+  </div>
+)
 };
 
 export default TaskCard;
