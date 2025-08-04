@@ -46,7 +46,7 @@ const TimeSlots = ({handleCompleteTask}) =>{
     );
     
     return(
-        <div className="w-full">
+       <div className="w-full h-[400px] overflow-y-auto border border-gray-300 rounded-md p-2">
             {timeSlots.map((slot, index) => {
                 const tasksForSlot = todayTasks.filter((task)=>{
                     const taskTime = task.startTime.toLocaleTimeString([], {
@@ -58,13 +58,12 @@ const TimeSlots = ({handleCompleteTask}) =>{
                 }) || [];
                 
                 return(
-                <div key={index} 
-                    className="flex items-start justify-between h-12 border-t border-gray-200 px-4">
+                <div key={index} className="grid grid-cols-[1fr_auto] items-start border-t border-gray-200 px-2 min-h-[48px]">
                     <div className="flex-grow">
                         {tasksForSlot.map((task) => (
                         <div
                             key={task.id} 
-                            className={openTaskId === task.id ? "relative z-50" : ""}
+                            className={openTaskId === task.id ? "relative z-40" : ""}
                         >
                             <TaskCard
                             task={task}
@@ -78,7 +77,7 @@ const TimeSlots = ({handleCompleteTask}) =>{
                         </div>
                         ))}
                     </div>
-                    <div className="text-xs text-gray-500 w-20 text-right shrink-0">
+                    <div className="text-xs text-gray-500 w-10 text-right shrink-0">
                         {slot}
                     </div>
                 </div>

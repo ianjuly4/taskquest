@@ -6,22 +6,31 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateCurrentDayTask = () => {
-  const { user, isLoggedIn, createTask } = useContext(MyContext);
+  const { user, isLoggedIn, createTask, dateTime: now } = useContext(MyContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [colorDropDown, setColorDropDown] = useState(false);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const minSelectableTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0);
+  const maxSelectableTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 45);
 
-  console.log(today)
-  console.log(today.toISOString())
 
+  const isToday = (someDate) => {
+    return (
+      someDate.getDate() === now.getDate() &&
+      someDate.getMonth() === now.getMonth() &&
+      someDate.getFullYear() === now.getFullYear()
+    );
+  };
+
+  
+  
   const formSchema = yup.object().shape({
     dateTime: yup
       .date()
       .required("Start date is required")
-      .min(today, "Start date must be today or later"),
+      .min(now, "Start date must be today and atleast 1 hour ahead"),
     title: yup.string().required("Title is required").max(100),
     duration: yup
       .string()
@@ -77,6 +86,11 @@ const CreateCurrentDayTask = () => {
       }
     },
   });
+
+  function roundUpToNext15(date = now){
+    const ms = 1000 * 60 *15 
+    return new Date(Math.ceil(date.getTime()/ms)* ms)
+  }
 
   const handleDropdownToggle = () => setDropdownOpen(!dropdownOpen);
 
@@ -136,11 +150,15 @@ const CreateCurrentDayTask = () => {
                   onChange={(dateTime) => createTaskFormik.setFieldValue("dateTime", dateTime)}
                   placeholderText="Task start"
                   dateFormat="yyyy/MM/dd h:mm aa"
-                  minDate={today}
-                  maxDate={today}
+                  minDate={todayDateOnly}
+                  maxDate={todayDateOnly}
                   showTimeSelect
                   timeIntervals={15}
                   className="border rounded px-2 py-1 text-sm w-40"
+                  minTime={
+                    createTaskFormik.values.dateTime && isToday(new Date(createTaskFormik.values.dateTime))
+                    ? roundUpToNext15(now):minSelectableTime}
+                  maxTime={maxSelectableTime}
                 />
               </div>
 

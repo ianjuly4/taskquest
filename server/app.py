@@ -19,8 +19,12 @@ class Tasks(Resource):
     def post(self):
         data = request.get_json()
         user_id = session.get('user_id')
+
         if not user_id:
             return make_response({"error": "Unauthorized. Please login."}, 401)
+        
+        user = User.query.filter(User.id == user_id).first()
+    
 
         date_time_str = data.get("dateTime")
         if not date_time_str:
@@ -47,13 +51,12 @@ class Tasks(Resource):
             content=data.get('content'),
             user_id=user_id,
             date_id=date_obj.id,
-            repeat_group_id=None
         )
 
         db.session.add(new_task)
         db.session.commit()
         
-        return make_response(new_task.to_dict(), 201)
+        return make_response(user.to_dict(), 201)
 
 api.add_resource(Tasks, '/tasks')
 
@@ -63,6 +66,13 @@ class TasksById(Resource):
     def patch(self, id):
         data = request.get_json()
 
+        user_id = session.get('user_id')
+
+        if not user_id:
+            return make_response({"error": "Unauthorized. Please login."}, 401)
+        
+        user = User.query.filter(User.id == user_id).first()
+
         task = Task.query.filter(Task.id == id).first()
         if not task:
             return make_response({"message": "Task not found"}, 404)
@@ -71,7 +81,8 @@ class TasksById(Resource):
             setattr(task, attr, value)
 
         db.session.commit()
-        return make_response(task.to_dict(), 201)
+        return make_response(user.to_dict(), 201)
+
 
     def delete(self, id):
         user_id = session.get('user_id')

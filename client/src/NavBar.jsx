@@ -5,19 +5,10 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 
 const NavBar = () => {
-  const { error, login, logout, user, isLoggedIn, signup } = useContext(MyContext);
+  const { error, login, logout, user, isLoggedIn, signup, dateTime } = useContext(MyContext);
   const [loginDropDownOpen, setLoginDropDownOpen] = useState(false);
   const [createDropDownOpen, setCreateDropDownOpen] = useState(false)
-  const [dateTime, setDateTime] = useState(new Date());
-
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDateTime(new Date());  
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
+  
   const formSchema = yup.object().shape({
     username: yup.string().required("Must enter a username.").max(25),
     password: yup.string().required("Must enter a password").max(25),
@@ -54,6 +45,7 @@ const NavBar = () => {
 
   const formattedDateTime = dateTime.toLocaleString();
   
+
   
   return (
     <div className="text-sm font-medium flex items-center space-x-4 relative">
@@ -82,10 +74,7 @@ const NavBar = () => {
         <>
           <button
             className="bg-white text-black px-2 py-2 rounded-lg shadow"
-            onClick={()=>
-              {console.log("Login button clicked")
-              setLoginDropDownOpen(!loginDropDownOpen)
-              }}
+            onClick={()=>setLoginDropDownOpen(!loginDropDownOpen)}
           >
             Login
           </button>

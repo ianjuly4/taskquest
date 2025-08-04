@@ -4,69 +4,73 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
   const {
     id,
     title,
-    category,
     color,
-    color_meaning,
     content,
-    comments,
-    duration_minutes,
+    duration,
     status,
-    repeat,
-    due_datetime,
     startTime,
   } = task;
 
-
-  const [deleteDropDown, setDeleteDropDown] = useState(false);
-  const [deleteAllRepeats, setDeleteAllRepeats] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null)
-
-  useEffect(()=>{
-    let targetTime;
-
-    if(due_datetime){
-      targetTime = new Date(due_datetime);
-    } else if (startTime && duration_minutes){
-      targetTime = new Date(new Date(startTime).getTime()+duration_minutes*60000);
-    }
-    if(!targetTime) return
-
-    const updatedCountdown = ()=>{
-      const now = new Date();
-      const difference = targetTime - now
-      if(difference <=0){
-        setTimeLeft("00:00:00")
-        return
-      }
-      const hours = String(Math.floor(difference/(1000*60*60))).padStart(2, "0");
-      const minutes = String(Math.floor((difference/(1000*60))%60)).padStart(2, '0')
-      const seconds = String(Math.floor((difference/1000)%60)).padStart(2,'0')
-
-      setTimeLeft(`${hours}:${minutes}:${seconds}`)
-    };
-    updatedCountdown()
-    const interval = setInterval(updatedCountdown, 1000)
-    return ()=> clearInterval(interval)
-  }, [due_datetime, duration_minutes, startTime])
-
   const handleDelete = () => {
-    deleteTask(task.id, deleteAllRepeats);
-    setDeleteDropDown(false);
+    deleteTask(task.id);
   };
 
-  let endTimeDisplay = null;
-  if(due_datetime){
-    endTimeDisplay = new Date(due_datetime).toLocaleDateString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }else if(startTime && duration_minutes){
-    const endTime = new Date(new Date(startTime).getTime()+ duration_minutes*60000);
-    endTimeDisplay= endTime.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+  useEffect(() => {
+  if (!startTime || !duration) return;
+
+  const start = new Date(startTime); 
+  const end = new Date(start.getTime() + duration * 60000);
+
+  const interval = setInterval(() => {
+    const now = new Date();
+
+    const diff = end.getTime() - now.getTime(); 
+
+    if (diff <= 0) {
+      setTimeLeft("0m");
+      clearInterval(interval);
+    } else {
+      const totalMinutes = Math.floor(diff / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      const minutes = totalMinutes % 60;
+      const hours = Math.floor(totalMinutes / 60);
+
+      const timeStr = [
+        hours > 0 ? `${hours}h` : null,
+        `${minutes}m`,
+        `${seconds}s`,
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      setTimeLeft(timeStr);
+    }
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [startTime, duration]);
+
+
+
+  function formatDuration(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const parts = [];
+
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins > 0) parts.push(`${mins}m`);
+
+  return parts.length ? parts.join(" ") : "0m";
   }
+
+  function calculateEndTime(startTimeStr, durationMinutes) {
+  if (!startTimeStr || !durationMinutes) return null;
+  const start = new Date(startTimeStr);
+  const end = new Date(start.getTime() + durationMinutes * 60000);
+  return end;
+  }
+
 
   return (
     <div
@@ -86,11 +90,15 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
                   minute: "2-digit",
                 })} 
               </p>
-              {endTimeDisplay && (
+             
                 <p>
-                  <strong>Ends: </strong>{endTimeDisplay}
+                  <strong>Ends: </strong>
+                  {calculateEndTime(startTime, duration).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </p>
-                )}
+          
                   {status && (
                     <p>
                       <strong>Status: </strong>{status}
@@ -113,65 +121,33 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, handleCompleteTask }) =>
       {isOpen && (
         <>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-800 mb-4">
-            {category&& <p>• Category: {category}</p>}
-            {color_meaning && <p>• Color Meaning: {color_meaning}</p>}
-            {due_datetime && <p>• Due: {due_datetime}</p>}
-            <p>• Duration: {duration_minutes || "N/A"} min</p>
-            {repeat && <p>• Repeats: {repeat}</p>}
-            {comments && <p>• Comments: {comments}</p>}
+           
+            <p>• Duration: {formatDuration(duration) || "N/A"} min</p>
             {content && <p>• Content: {content}</p>}
           </div>
-
           {content && (
             <p className="text-sm text-gray-900 mb-4">
               <span className="font-medium">Note:</span> {content}
             </p>
           )}
 
-          {/* Delete Button */}
+          {/* Complete/Delete Button */}
           <div className="flex justify-between items-center mt-4 w-full">
             {timeLeft && (
-              <div className="flex items-center space-x-2 text-sm text-gray-700">
+              <div className="flex flex-col space-y-2 text-sm text-gray-700 ml-auto">
                 <p><strong>Time Remaining: </strong>{timeLeft}</p>
                 <button className="bg-green-500 text-white px-3 py-1 rounded-md shadow text-sm" onClick={()=>handleCompleteTask(task.id)}>
                   Complete
                 </button>
+                <button className ="bg-red-400 text-white px-3 py-1 rounded-md shadow text-sm" onClick={()=>handleCompleteTask(task.id)}>
+                  Delete
+                </button>
               </div>
             )}
-            <button
-              className="bg-red-500 text-white px-3 py-1 rounded-md text-sm shadow"
-              onClick={() => setDeleteDropDown(!deleteDropDown)}
-            >
-              Delete
-            </button>
+          
           </div>
 
-          {/* Delete Dropdown */}
-          {deleteDropDown && (
-            <div
-              className="absolute top-full right-0 mt-2 w-64  border border-gray-300 rounded-lg shadow-lg p-4 z-20"
-              style={{backgroundColor:color}}
-              onMouseLeave={() => setDeleteDropDown(false)}
-            >
-              <label className="flex items-center space-x-2 text-sm mb-2">
-                <input
-                  type="checkbox"
-                  checked={deleteAllRepeats}
-                  onChange={() => setDeleteAllRepeats(!deleteAllRepeats)}
-                />
-                <span>Delete all repeated tasks</span>
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Tip: Uncheck to delete only this instance.
-              </p>
-              <button
-                onClick={handleDelete}
-                className="bg-red-600 text-white px-3 py-1 rounded-md text-sm w-full"
-              >
-                Confirm Delete
-              </button>
-            </div>
-          )}
+         
         </>
       )}
     </div>

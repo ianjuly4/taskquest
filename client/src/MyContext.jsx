@@ -9,13 +9,14 @@ const MyContextProvider = ({children}) =>{
   const [loading, setLoading] = useState(false);
   const [tasks, setTasks] = useState([])
   const [dates, setDates] = useState([])
+  const [dateTime, setDateTime] = useState(new Date());
 
   //deleteTask
-  const deleteTask = (taskId, deleteAll = false) => {
+  const deleteTask = (taskId ) => {
   setLoading(true);
   setError(null);
 
-  fetch(`http://localhost:5555/tasks/${taskId}?all=${deleteAll}`, {
+  fetch(`http://localhost:5555/tasks/${taskId}`, {
     method: "DELETE",
     headers: {
       "Content-type": "application/json",
@@ -42,6 +43,34 @@ const MyContextProvider = ({children}) =>{
       setLoading(false);
     });
   };
+
+  //updateTask
+  const updateTask = (taskId, values)=>{
+    return fetch(`http://localhost:5555/tasks/${taskId}`,{
+      method: "PATCH",
+      headers: {"Content-Type": "application/json",},
+      credentials: "include",
+      body: JSON.stringify(values)
+    })
+    .then(async (response) => {
+      const data = await response.json();
+      console.log(data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update task");
+      }
+      setUser(data)
+      return true;
+    })
+    .catch((error) => {
+      console.error("Task update error:", error.message);
+      setError("Error updating task: " + error.message);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+  }
+  
 
   //createTask
   const createTask = (
@@ -79,59 +108,7 @@ const MyContextProvider = ({children}) =>{
       if (!response.ok) {
         throw new Error(data.error || "Failed to create task");
       }
-   
-      setUser(prevUser => {
-        let newTasks = [];
-
-
-        if (Array.isArray(data.tasks)) {
-          newTasks = data.tasks;
-        } else {
-          newTasks = [data]; 
-        }   
-        const updatedDates = prevUser.dates.map((d)=>({
-          ...d,
-          tasks: [...(d.tasks || [])],
-        }))
-
-        newTasks.forEach((task) => {
-          const rawDateTime = task.date?.date_time || task.date_time;
-              const taskDateStr =
-                typeof rawDateTime === "string" ? rawDateTime.split(" ")[0] : null;
-
-              if (!taskDateStr) {
-            
-                console.warn("Skipping task with invalid date_time:", task);
-                return;
-              }
-
-              const dateIndex = updatedDates.findIndex((d) => {
-                const dDateStr =
-                  typeof d.date_time === "string" ? d.date_time.split(" ")[0] : null;
-                return dDateStr === taskDateStr;
-              });
-
-            if (dateIndex !== -1) {
-              updatedDates[dateIndex]={
-                ...updatedDates[dateIndex],
-                tasks: [...updatedDates[dateIndex].tasks, task],
-              };
-            } else {
-              updatedDates.push({
-                date_time: rawDateTime,
-                id: task.date_id,
-                tasks: [task],
-              });
-            }
-        });
-
-        return {
-          ...prevUser,
-          dates: updatedDates,
-        };
-    });
-
-
+      setUser(data)
       return true;
     })
     .catch((error) => {
@@ -203,7 +180,6 @@ const MyContextProvider = ({children}) =>{
 
   //Login
   const login = (username, password) => {
-    setLoading(true);
     setError(null);
 
     return fetch("http://localhost:5555/login", {
@@ -262,6 +238,13 @@ const MyContextProvider = ({children}) =>{
       setError("Logout Error: " + error.message);
       };
   };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDateTime(new Date());  
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
   
 
     
@@ -281,7 +264,8 @@ const MyContextProvider = ({children}) =>{
         dates,
         deleteTask,
         loading,
-        
+        dateTime,
+
       }}
     >
       {children}
