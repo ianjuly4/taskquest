@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleCompleteTask }) => {
+const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleCompleteTask, questStarted, setError }) => {
   const {
     id,
     title,
@@ -14,9 +14,12 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
   const [timeLeft, setTimeLeft] = useState(null)
 
   const handleDelete = () => {
-    deleteTask(task.id);
-  };
-
+    if(questStarted){
+      setError("Cannot Delete Tasks While In Quest")
+    }else{
+      deleteTask(task.id);
+    };
+  }
   useEffect(() => {
   if (!startTime || !duration) return;
 

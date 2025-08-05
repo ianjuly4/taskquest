@@ -10,6 +10,7 @@ const MyContextProvider = ({children}) =>{
   const [tasks, setTasks] = useState([])
   const [dates, setDates] = useState([])
   const [dateTime, setDateTime] = useState(new Date());
+  const [questStarted, setQuestStarted] = useState(false)
 
   //deleteTask
   const deleteTask = (taskId ) => {
@@ -265,8 +266,8 @@ const MyContextProvider = ({children}) =>{
         deleteTask,
         loading,
         dateTime,
-        updateTask
-
+        updateTask,
+        setQuestStarted
       }}
     >
       {children}

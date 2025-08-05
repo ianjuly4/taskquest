@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateCurrentDayTask = () => {
-  const { user, isLoggedIn, createTask, dateTime: now } = useContext(MyContext);
+  const { user, isLoggedIn, createTask, dateTime: now, questStarted } = useContext(MyContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [colorDropDown, setColorDropDown] = useState(false);
@@ -130,7 +130,7 @@ const CreateCurrentDayTask = () => {
         </div>
       )}
 
-      {dropdownOpen &&
+      {dropdownOpen && questStarted
         (!isLoggedIn || !user ? (
           <div className="text-red-500 text-sm mt-4">Please log in to use this feature.</div>
         ) : (

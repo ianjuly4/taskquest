@@ -5,7 +5,7 @@ import { MyContext } from "./MyContext";
 import MainMenu from "./MainMenu";
 
 const PhaserGame = ({testMode=false}) =>{
-    const {user} = useContext(MyContext)
+    const {user, setQuestStarted} = useContext(MyContext)
     const dates = user?.dates
 
     const isToday = (dateStr) => {
@@ -24,8 +24,9 @@ const PhaserGame = ({testMode=false}) =>{
     const allTodaysTasks = todayEntries.flatMap((entry) => entry.tasks || []);
     //console.log(todayEntries)
     //console.log(allTodaysTasks)
-
-    
+    const onStartQuest = () =>{
+        setQuestStarted(true)
+    }
     useEffect(()=>{
         if(!user) return
         const config = {
