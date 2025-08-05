@@ -71,7 +71,7 @@ const PhaserGame = ({testMode=false}) =>{
                 className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
             >
             </div>):(
-                <div>Please Log in to start a quest</div>
+                <div className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4">Please Log in to start a quest</div>
             )}
     </div>
   
