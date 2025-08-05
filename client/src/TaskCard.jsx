@@ -52,7 +52,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
   }, 1000);
 
   return () => clearInterval(interval);
-}, [startTime, duration]);
+  }, [startTime, duration]);
 
 
 
