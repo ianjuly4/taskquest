@@ -19,12 +19,22 @@ export default class Quest extends Phaser.Scene{
 
         this.setBackgroundByTime()
 
+        const ground1Height = this.textures.get('nature2_3').getSourceImage().height;
+        const ground2Height = this.textures.get('nature2_4').getSourceImage().height;
+
         this.add.image(0, 0, 'nature2_1').setOrigin(0).setDepth(-3).setDisplaySize(width, height);
-        this.bgClouds = this.add.tileSprite(0, 0, width, height, 'nature2_2').setOrigin(0).setDepth(-2).setScale(2);
-        this.add.image(0, 0, 'nature2_3').setOrigin(0).setDepth(-1).setDisplaySize(width, height);
-        this.add.image(0, 0, 'nature2_4').setOrigin(0).setDepth(0).setDisplaySize(width, height);
+        this.bgClouds = this.add.tileSprite(0, 0, width, height, 'nature2_2').setOrigin(0).setDepth(-2)
+        this.bgGround1 = this.add.tileSprite(0, height - ground1Height, width, ground1Height, 'nature2_3')
+            .setOrigin(0)
+            .setDepth(-1);
 
-
+        this.bgGround2 = this.add.tileSprite(0, height - ground2Height, width, ground2Height, 'nature2_4')
+            .setOrigin(0)
+            .setDepth(0);
+        console.log(this.bgGround1.x, this.bgGround1.y)
+        console.log(this.bgClouds.x, this.bgClouds.y)
+    
+    
         const totalTasks = this.tasks.length
         const missed = this.tasks.filter(task => task.status === "incomplete").length
         const damagePerMissed = 3 / totalTasks;
@@ -36,6 +46,8 @@ export default class Quest extends Phaser.Scene{
     }
     update(){
         this.bgClouds.tilePositionX += 0.2
+        this.bgGround1.tilePositionX += 0.2
+        this.bgGround2.tilePositionX += 0.2
 
     }
     setBackgroundByTime() {

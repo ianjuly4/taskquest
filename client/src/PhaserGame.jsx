@@ -31,8 +31,8 @@ const PhaserGame = ({testMode=false}) =>{
         if(!user) return
         const config = {
             type: Phaser.AUTO,
-            width: 300,
-            height: 100,
+            width: 370,
+            height: 170,
             backgroundColor:  "#D1D5DB",
             parent: "phaser-container",
             physics: {

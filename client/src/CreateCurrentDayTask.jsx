@@ -130,7 +130,7 @@ const CreateCurrentDayTask = () => {
         </div>
       )}
 
-      {dropdownOpen && questStarted
+      {dropdownOpen && 
         (!isLoggedIn || !user ? (
           <div className="text-red-500 text-sm mt-4">Please log in to use this feature.</div>
         ) : (
