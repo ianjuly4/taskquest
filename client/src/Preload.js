@@ -1,6 +1,6 @@
 export function Preload(){
     //Heros
-  
+     this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {frameWidth: 1024/8, frameHeight:128})
     //Nature backgrounds
     this.load.image('nature2_1', 'assets/backgrounds/nature_2/1.png')
     this.load.image('nature2_2', 'assets/backgrounds/nature_2/2.png')

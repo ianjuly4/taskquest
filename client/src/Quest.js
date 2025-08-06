@@ -33,8 +33,21 @@ export default class Quest extends Phaser.Scene{
             .setDepth(0);
         console.log(this.bgGround1.x, this.bgGround1.y)
         console.log(this.bgClouds.x, this.bgClouds.y)
-    
-    
+
+        this.archer = this.add.sprite(150, 130, 'ArcherWalk')
+            .setOrigin(0.5, 1) 
+            .setDepth(3)
+            .setScale(0.5) 
+
+        this.anims.create({
+            key: 'walk',
+            frames: this.anims.generateFrameNumbers('ArcherWalk', { start: 0, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.archer.play('walk');
+      
         const totalTasks = this.tasks.length
         const missed = this.tasks.filter(task => task.status === "incomplete").length
         const damagePerMissed = 3 / totalTasks;
@@ -46,8 +59,8 @@ export default class Quest extends Phaser.Scene{
     }
     update(){
         this.bgClouds.tilePositionX += 0.2
-        this.bgGround1.tilePositionX += 0.2
-        this.bgGround2.tilePositionX += 0.2
+        this.bgGround1.tilePositionX += 0.4
+        this.bgGround2.tilePositionX += 0.6
 
     }
     setBackgroundByTime() {
