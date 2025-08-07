@@ -1,11 +1,15 @@
+import {BackgroundThemes} from "./BackgroundThemes"
+
 export function Preload(){
     //Heros
-     this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {frameWidth: 1024/8, frameHeight:128})
-    //Nature backgrounds
-    this.load.image('nature2_1', 'assets/backgrounds/nature_2/1.png')
-    this.load.image('nature2_2', 'assets/backgrounds/nature_2/2.png')
-    this.load.image('nature2_3', 'assets/backgrounds/nature_2/3.png')
-    this.load.image('nature2_4', 'assets/backgrounds/nature_2/4.png')
-
+    this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {frameWidth: 1024/8, frameHeight:128})
     
+    for (const [theme, { folder, keys }] of Object.entries(BackgroundThemes)) {
+        keys.forEach((imageKey, index) => {
+            const imagePath = `assets/backgrounds/${folder}/${index + 1}.png`;
+            this.load.image(imageKey, imagePath);
+        });
+    }
+
+    this.backgroundThemes = BackgroundThemes
 }
