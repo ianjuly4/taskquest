@@ -24,8 +24,6 @@ const CreateCurrentDayTask = () => {
     );
   };
 
-  
-  
   const formSchema = yup.object().shape({
     dateTime: yup
       .date()
@@ -108,16 +106,20 @@ const CreateCurrentDayTask = () => {
   return (
     <div className="w-full bg-gray-300 text-black border-4 border-gray-300 rounded-3xl p-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Create Current Day Task</h1>
-        <button
-          type="button"
-          className="text-black text-2xl font-bold"
-          onClick={handleDropdownToggle}
-        >
-          {dropdownOpen ? "−" : "+"}
-        </button>
-      </div>
+      {questStarted ?(<div className="flex justify-between items-center">
+          <h1 className="text-xl text-gray-500">Create Current Day Task</h1></div>):
+
+        (<div className="flex justify-between items-center">
+          <h1 className="text-xl font-bold">Create Current Day Task</h1>
+          <button
+            type="button"
+            className="text-black text-2xl font-bold"
+            onClick={handleDropdownToggle}
+          >
+            {dropdownOpen ? "−" : "+"}
+          </button>
+        </div>
+        )}
 
       {/* Error block */}
       {Object.keys(createTaskFormik.errors).length > 0 && createTaskFormik.submitCount > 0 && (
@@ -138,9 +140,9 @@ const CreateCurrentDayTask = () => {
           <form onSubmit={createTaskFormik.handleSubmit} className="mt-4 space-y-6">
             {/* 1 Row of Fields */}
             <div className="grid grid-cols-1 gap-4">
-              {/* Date/Time */}
+              {/* Start Date/Time */}
               <div className="flex flex-col w-full max-w-xs mx-auto">
-                <label className="text-sm font-medium mb-1 ">Date/Time</label>
+                <label className="text-sm font-medium mb-1 ">Start Date/Time</label>
                 <DatePicker
                   selected={
                     createTaskFormik.values.dateTime
@@ -160,7 +162,7 @@ const CreateCurrentDayTask = () => {
                     ? roundUpToNext15(now):minSelectableTime}
                   maxTime={maxSelectableTime}
                 />
-              </div>
+              </div> 
 
               {/* Title */}
               <div className="flex flex-col w-full max-w-xs mx-auto">
@@ -189,6 +191,7 @@ const CreateCurrentDayTask = () => {
                 />
               </div>
 
+             
               {/* Status */}
               <div className="flex flex-col w-full max-w-xs mx-auto">
                 <label className="text-sm font-medium mb-1">Status</label>

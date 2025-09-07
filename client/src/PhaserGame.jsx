@@ -7,7 +7,7 @@ import MainMenu from "./MainMenu";
 const PhaserGame = ({testMode=false}) =>{
     const {user, setQuestStarted} = useContext(MyContext)
     const dates = user?.dates
-
+    
     const isToday = (dateStr) => {
         if(!dateStr || typeof dateStr !== 'string') return false;
 
@@ -22,35 +22,35 @@ const PhaserGame = ({testMode=false}) =>{
 
     const todayEntries = dates?.filter((d) => isToday(d.date_time)) || [];
     const allTodaysTasks = todayEntries.flatMap((entry) => entry.tasks || []);
-    //console.log(todayEntries)
-    //console.log(allTodaysTasks)
+
     const onStartQuest = () =>{
         setQuestStarted(true)
     }
+    
     useEffect(()=>{
         if(!user) return
-        const config = {
-            type: Phaser.AUTO,
-            width: 370,
-            height: 170,
-            backgroundColor:  "#D1D5DB",
-            parent: "phaser-container",
-            physics: {
-                default: "arcade",
-                arcade: {
-                gravity: { y: 0 },
-                debug: false,
+            const config = {
+                type: Phaser.AUTO,
+                width: 370,
+                height: 170,
+                backgroundColor:  "#D1D5DB",
+                parent: "phaser-container",
+                physics: {
+                    default: "arcade",
+                    arcade: {
+                    gravity: { y: 0 },
+                    debug: false,
+                    },
                 },
-            },
-            scene: [
-                MainMenu,
-                Quest
-                ],
-            callbacks: {
-                postBoot: (game) => {
-                game.registry.set("onStartQuest", onStartQuest); 
-                },
-                },
+                scene: [
+                    MainMenu,
+                    Quest
+                    ],
+                callbacks: {
+                    postBoot: (game) => {
+                    game.registry.set("onStartQuest", onStartQuest); 
+                    },
+                    },
             };
 
             const game = new Phaser.Game(config);

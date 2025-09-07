@@ -4,6 +4,7 @@ const MyContext = createContext();
 
 const MyContextProvider = ({children}) =>{
   const [error, setError] = useState(null);
+  const [loginError, setLoginError] = useState(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -181,7 +182,7 @@ const MyContextProvider = ({children}) =>{
 
   //Login
   const login = (username, password) => {
-    setError(null);
+    setLoginError(null);
 
     return fetch("http://localhost:5555/login", {
       method: "POST",
@@ -203,13 +204,13 @@ const MyContextProvider = ({children}) =>{
           return true;
         } else if (data.error) {
           console.log(data.error);
-          setError(data.error + " An error occurred. Please try again.");
+          setLoginError(data.error + " An error occurred. Please try again.");
           return false;
         }
       })
       .catch((error) => {
         console.log(error.message);
-        setError(error.message || "An error occurred. Please try again later.");
+        setLoginError(error.message || "An error occurred. Please try again later.");
         return false;
       })
       .finally(() => {
@@ -248,7 +249,7 @@ const MyContextProvider = ({children}) =>{
   }, []);
   
 
-    
+
  return (
     <MyContext.Provider
       value={{
@@ -257,6 +258,7 @@ const MyContextProvider = ({children}) =>{
         setUser,
         setError,
         error,
+        loginError,
         login,
         isLoggedIn,
         logout, 
@@ -267,7 +269,8 @@ const MyContextProvider = ({children}) =>{
         loading,
         dateTime,
         updateTask,
-        setQuestStarted
+        setQuestStarted,
+        questStarted
       }}
     >
       {children}

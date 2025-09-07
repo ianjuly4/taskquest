@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 
 const NavBar = () => {
-  const { error, login, logout, user, isLoggedIn, signup, dateTime } = useContext(MyContext);
+  const { loginError, login, logout, user, isLoggedIn, signup, dateTime } = useContext(MyContext);
   const [loginDropDownOpen, setLoginDropDownOpen] = useState(false);
   const [createDropDownOpen, setCreateDropDownOpen] = useState(false)
   
@@ -124,8 +124,8 @@ const NavBar = () => {
                 >
                   Enter
                 </button>
-                {error && (
-                  <div className="text-red-500 text-xs mt-2 text-center">{error}</div>
+                {loginError && (
+                  <div className="text-red-500 text-xs mt-2 text-center">{loginError}</div>
                 )}
               </form>
             </div>

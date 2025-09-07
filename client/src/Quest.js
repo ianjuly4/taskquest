@@ -1,6 +1,5 @@
 import Phaser from 'phaser'
 import { Preload } from './Preload'
-import { BackgroundThemes } from './BackgroundThemes'
 
 export default class Quest extends Phaser.Scene {
     constructor() {
@@ -11,30 +10,31 @@ export default class Quest extends Phaser.Scene {
         this.testMode = data.test || false
         this.user = data.user || null
         this.tasks = data.tasks || []
-
-     
         this.backgroundThemes = BackgroundThemes
-        this.stageThemes = []
-        this.currentStage = 0
-        this.backgroundLayers = []
+        this.isTransitioning = false
+        this.transitionCount = 0
     }
 
     preload() {
-        Preload.call(this) 
+        this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {
+            frameWidth: 1024 / 8,
+            frameHeight: 128
+        })
+
+        this.load.image("heart", "assets/8.png")
+
+        for (const [theme, { folder, keys }] of Object.entries(BackgroundThemes)) {
+            keys.forEach((imageKey, index) => {
+                const imagePath = `assets/backgrounds/${folder}/${index + 1}.png`
+                this.load.image(imageKey, imagePath)
+            })
+        }
     }
 
     create() {
-        this.setBackgroundByTime()
+        this.createBackground()
 
-        const themeKeys = Object.keys(this.backgroundThemes)
-        this.stageThemes = Phaser.Utils.Array.Shuffle(themeKeys).slice(0, this.tasks.length)
-        const initialTheme = this.stageThemes[0]
-        this.currentTheme = initialTheme
-
-        this.createBackground(initialTheme)
-
-      
-        this.archer = this.add.sprite(150, 130, 'ArcherWalk')
+        this.archer = this.add.sprite(-50, 130, 'ArcherWalk')
             .setOrigin(0.5, 1)
             .setDepth(3)
             .setScale(0.5)
@@ -46,109 +46,209 @@ export default class Quest extends Phaser.Scene {
             repeat: -1
         })
 
-        this.archer.play('walk')
-
        
-            
-            const totalTasks = this.tasks.length
+        const totalTasks = this.tasks.length
         const missed = this.tasks.filter(task => task.status === "incomplete").length
         const damagePerMissed = 3 / totalTasks
         const damage = missed * damagePerMissed
         this.health = Math.max(0, 3 - damage)
+
+        this.add.sprite(30, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
+        this.add.sprite(70, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
+        this.add.sprite(110, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
+
+        
+        this.playStartAnimation()
     }
 
     update() {
-       
-        this.backgroundLayers?.forEach(({ layer, speed }) => {
+        this.backgroundLayers?.forEach(({ layer, speed, isCloud }) => {
             if (layer.tilePositionX !== undefined) {
-                layer.tilePositionX += speed
+               
+                if (isCloud) {
+                    layer.tilePositionX += speed * 1.5 
+                } else {
+                    layer.tilePositionX += speed
+                }
             }
         })
     }
 
-    setBackgroundByTime() {
-        const hour = new Date().getHours()
-        let alpha
+    //
 
-        if (hour >= 5 && hour < 12) {
-            alpha = 0.1 
-        } else if (hour >= 12 && hour < 17) {
-            alpha = 0 
-        } else if (hour >= 17 && hour < 21) {
-            alpha = 0.25 
-        } else {
-            alpha = 0.5 
-        }
+    createBackground() {
+        const themes = Object.keys(this.backgroundThemes)
+        const selectedTheme = themes[Math.floor(Math.random() * themes.length)]
+        const keys = this.backgroundThemes[selectedTheme].keys
 
-        this.cameras.main.setBackgroundColor(alpha)
-    }
+        const { width, height } = this.scale
+        this.backgroundLayers = []
 
-    createBackground(theme) {
-        const keys = this.backgroundThemes[theme].keys;
-        const { width, height } = this.scale;
-
-        this.backgroundLayers = [];
-
-        const maxLayers = keys.length;
-
-        const scrollSpeeds = Array.from({ length: maxLayers }, (_, i) => i * 0.2);
-        const depthLevels = Array.from({ length: maxLayers }, (_, i) => -maxLayers + i);
+        const scrollSpeeds = Array.from({ length: keys.length }, (_, i) => i * 0.2)
+        const depthLevels = Array.from({ length: keys.length }, (_, i) => -keys.length + i)
 
         keys.forEach((key, index) => {
-            let layer;
+            let layer
             if (index === 0) {
-         
-            layer = this.add.image(0, 0, key)
-                .setOrigin(0)
-                .setDisplaySize(width, height)
-                .setDepth(depthLevels[index]);
+                layer = this.add.image(0, 0, key)
+                    .setOrigin(0)
+                    .setDisplaySize(width, height)
+                    .setDepth(depthLevels[index])
             } else {
-       
-            const imageHeight = this.textures.get(key).getSourceImage().height;
-            const yPos = height - imageHeight;
+                const imageHeight = this.textures.get(key).getSourceImage().height
+                const yPos = height - imageHeight
 
-            layer = this.add.tileSprite(0, yPos, width, imageHeight, key)
-                .setOrigin(0)
-                .setDepth(depthLevels[index]);
+                layer = this.add.tileSprite(0, yPos, width, imageHeight, key)
+                    .setOrigin(0)
+                    .setDepth(depthLevels[index])
             }
 
             this.backgroundLayers.push({
-            layer,
-            speed: scrollSpeeds[index] ?? 0,
-            });
-        });
-        }
+                layer,
+                speed: scrollSpeeds[index] ?? 0,
+                isCloud: index === 1 
+            })
+        })
+    }
 
-    changeBackground(newTheme) {
-      
-        if (this.tweens.isTweening(this.cameras.main)) return
+    playStartAnimation() {
+        this.archer.play('walk')
 
         this.tweens.add({
-            targets: this.cameras.main,
-            alpha: 0,
-            duration: 1000,
+            targets: this.archer,
+            x: 150,
+            duration: 2000,
+            ease: 'Power2',
             onComplete: () => {
-             
+                this.startAutoTransitions()
+            }
+        })
+
+    }
+
+    startAutoTransitions() {
+        this.time.addEvent({
+            delay: 10000, 
+            callback: () => {
+                this.scrollInNewBackground()
+
+                this.transitionCount++
+                if (this.transitionCount >= 3) {
+                    
+                    this.time.delayedCall(2000, () => {
+                        this.playEndAnimation()
+                    })
+                }
+            },
+            callbackScope: this,
+            loop: true
+        })
+    }
+
+    scrollInNewBackground() {
+        if (this.isTransitioning) return
+        this.isTransitioning = true
+
+        const { width, height } = this.scale
+        const themes = Object.keys(this.backgroundThemes)
+        const selectedTheme = themes[Math.floor(Math.random() * themes.length)]
+        const keys = this.backgroundThemes[selectedTheme].keys
+
+        const scrollSpeeds = Array.from({ length: keys.length }, (_, i) => i * 0.2)
+        const depthLevels = Array.from({ length: keys.length }, (_, i) => -keys.length + i)
+
+        const newLayers = []
+
+        keys.forEach((key, index) => {
+            let layer
+            if (index === 0) {
+                layer = this.add.image(width, 0, key)
+                    .setOrigin(0)
+                    .setDisplaySize(width, height)
+                    .setDepth(depthLevels[index])
+            } else {
+                const imageHeight = this.textures.get(key).getSourceImage().height
+                const yPos = height - imageHeight
+
+                layer = this.add.tileSprite(width, yPos, width, imageHeight, key)
+                    .setOrigin(0)
+                    .setDepth(depthLevels[index])
+            }
+
+            newLayers.push({
+                layer,
+                speed: scrollSpeeds[index] ?? 0,
+                isCloud: index === 1
+            })
+        })
+
+
+        const transitionDuration = 12000
+
+        this.tweens.addCounter({
+            from: 0,
+            to: width,
+            duration: transitionDuration,
+            ease: 'Linear',
+            onUpdate: tween => {
+                const value = tween.getValue()
+
+                this.backgroundLayers.forEach(({ layer }) => {
+                    layer.x = 0 - value
+                })
+
+                newLayers.forEach(({ layer }) => {
+                    layer.x = width - value
+                })
+            },
+            onComplete: () => {
                 this.backgroundLayers.forEach(({ layer }) => layer.destroy())
-                this.backgroundLayers = []
+                this.backgroundLayers = newLayers
+                this.isTransitioning = false
+            }
+        })
+    }
 
-                this.createBackground(newTheme)
-                this.currentTheme = newTheme
+    playEndAnimation() {
+        if (!this.archer || this.isTransitioning) return
 
-                this.tweens.add({
-                    targets: this.cameras.main,
-                    alpha: 1,
-                    duration: 1000
+        this.archer.play('walk')
+        this.archer.flipX = false 
+
+        this.tweens.add({
+            targets: this.archer,
+            x: this.scale.width + 100,
+            duration: 3000,
+            ease: 'Power2',
+            onComplete: () => {
+                this.time.delayedCall(1000, () => {
+                    this.scene.start('VictoryScene') 
                 })
             }
         })
     }
+}
 
-    advanceBackgroundStage() {
-        if (this.currentStage + 1 >= this.stageThemes.length) return 
-
-        this.currentStage++
-        const nextTheme = this.stageThemes[this.currentStage]
-        this.changeBackground(nextTheme)
+// Your background sets
+const BackgroundThemes = {
+    nature2: {
+        folder: 'nature_2',
+        keys: ['nature2_1', 'nature2_2', 'nature2_3', 'nature2_4']
+    },
+    nature3: {
+        folder: 'nature_3',
+        keys: ['nature3_1', 'nature3_2', 'nature3_3', 'nature3_4']
+    },
+    nature4: {
+        folder: 'nature_4',
+        keys: ['nature4_1', 'nature4_2', 'nature4_3', 'nature4_4']
+    },
+    nature5: {
+        folder: 'nature_5',
+        keys: ['nature5_1', 'nature5_2', 'nature5_3', 'nature5_4']
+    },
+    winter4: {
+        folder: "winter_4",
+        keys: ['winter4_1', 'winter4_2', 'winter4_3', 'winter4_4']
     }
 }

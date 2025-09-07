@@ -42,10 +42,21 @@ class Tasks(Resource):
             date_obj = Date(date_time=date_time, user_id=user_id)
             db.session.add(date_obj)
             db.session.flush()
+<<<<<<< HEAD
 
         new_task = Task(
             title=data.get('title'),
             duration=data.get('duration'),
+=======
+        duration = data.get('duration')
+        duplicate_task = Task.query.filter_by(duration = duration, date_id=date_obj.id, user_id=user_id).first()
+        if duplicate_task:
+            return make_response({'error': 'Cannot have duplicate tasks for one slot'}, 400)
+
+        new_task = Task(
+            title=data.get('title'),
+            duration=duration,
+>>>>>>> 18e034c (Reinitialized repo and removed broken nested Git)
             status=data.get('status', 'pending'),
             color=data.get('color'),
             content=data.get('content'),
