@@ -42,21 +42,43 @@ class Tasks(Resource):
             date_obj = Date(date_time=date_time, user_id=user_id)
             db.session.add(date_obj)
             db.session.flush()
-<<<<<<< HEAD
 
-        new_task = Task(
-            title=data.get('title'),
-            duration=data.get('duration'),
-=======
         duration = data.get('duration')
-        duplicate_task = Task.query.filter_by(duration = duration, date_id=date_obj.id, user_id=user_id).first()
-        if duplicate_task:
-            return make_response({'error': 'Cannot have duplicate tasks for one slot'}, 400)
+        duration = data.get("duration")
+        if not isinstance(duration, int) or duration <= 0:
+            return make_response({"error": "Duration must be a positive integer (minutes)."}, 400)
+
+  
+        date_obj = Date.query.filter_by(date_time=date_time, user_id=user_id).first()
+        if not date_obj:
+            date_obj = Date(date_time=date_time, user_id=user_id)
+            db.session.add(date_obj)
+            db.session.flush() 
+
+        new_start = date_time
+        new_end = new_start + timedelta(minutes=duration)
+
+        tasks_same_day = Task.query.join(Date).filter(
+            Task.user_id == user_id,
+            db.func.date(Date.date_time) == date_time.date()
+        ).all()
+
+      
+        for task in tasks_same_day:
+            existing_start = task.date.date_time
+
+          
+            if existing_start.tzinfo is None:
+                existing_start = existing_start.replace(tzinfo=timezone.utc)
+
+            existing_end = existing_start + timedelta(minutes=task.duration)
+
+            if not (new_end <= existing_start or new_start >= existing_end):
+                return make_response({'error': 'This time slot overlaps with another task.'}, 400)
 
         new_task = Task(
             title=data.get('title'),
             duration=duration,
->>>>>>> 18e034c (Reinitialized repo and removed broken nested Git)
             status=data.get('status', 'pending'),
             color=data.get('color'),
             content=data.get('content'),

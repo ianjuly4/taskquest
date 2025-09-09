@@ -62,11 +62,7 @@ class Task(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False) 
-<<<<<<< HEAD
-    duration = db.Column(db.Integer, nullable=True)     
-=======
     duration = db.Column(db.Integer, nullable=False)
->>>>>>> 18e034c (Reinitialized repo and removed broken nested Git)
     status = db.Column(db.String, nullable=False, default="pending")
     color = db.Column(db.String, nullable=True)
     content = db.Column(db.Text, nullable=True)

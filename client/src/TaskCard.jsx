@@ -10,7 +10,9 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
     status,
     startTime,
   } = task;
-
+  
+ 
+  
   const [timeLeft, setTimeLeft] = useState(null)
 
   const handleDelete = () => {
@@ -26,6 +28,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
   const start = new Date(startTime); 
   const end = new Date(start.getTime() + duration * 60000);
 
+    
   const interval = setInterval(() => {
     const now = new Date();
     const diff = end.getTime() - now.getTime(); 

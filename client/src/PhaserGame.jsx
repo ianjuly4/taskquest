@@ -6,6 +6,7 @@ import MainMenu from "./MainMenu";
 
 const PhaserGame = ({testMode=false}) =>{
     const {user, setQuestStarted} = useContext(MyContext)
+    const [dayDuration, setDayDuration] = useState(0)
     const dates = user?.dates
     
     const isToday = (dateStr) => {
@@ -22,10 +23,46 @@ const PhaserGame = ({testMode=false}) =>{
 
     const todayEntries = dates?.filter((d) => isToday(d.date_time)) || [];
     const allTodaysTasks = todayEntries.flatMap((entry) => entry.tasks || []);
-
     const onStartQuest = () =>{
         setQuestStarted(true)
     }
+
+    const calculateDayDuration = () => {
+        if (!todayEntries || todayEntries.length === 0) {
+            console.log("No entries for today");
+            return null;
+        }
+
+  
+        const sortedEntries = [...todayEntries].sort((a, b) =>
+            new Date(a.date_time.replace(" ", "T")) - new Date(b.date_time.replace(" ", "T"))
+        );
+
+
+        const start = new Date(sortedEntries[0].date_time.replace(" ", "T"));
+
+     
+        const lastEntry = sortedEntries[sortedEntries.length - 1];
+        const lastStart = new Date(lastEntry.date_time.replace(" ", "T"));
+
+      
+        const lastTask = lastEntry.tasks?.[0];
+        const lastDuration = lastTask?.duration || 0;
+
+        const end = new Date(lastStart.getTime() + lastDuration * 60000);
+
+
+        const durationMs = end - start;
+
+        const durationMinutes = Math.floor(durationMs / 60000);
+
+        //console.log("🕒 Start:", start.toLocaleTimeString());
+        //console.log("🕔 End:", end.toLocaleTimeString());
+        //console.log("📅 Total Day Duration:", durationMinutes, "minutes");
+        setDayDuration(durationMinutes)
+        return durationMinutes;
+        };
+
     
     useEffect(()=>{
         if(!user) return
@@ -56,7 +93,7 @@ const PhaserGame = ({testMode=false}) =>{
             const game = new Phaser.Game(config);
 
             if(testMode){
-                game.scene.start('MainMenu', {test: true, user, tasks: allTodaysTasks})
+                game.scene.start('MainMenu', {test: true, user, tasks: allTodaysTasks, dayDuration})
             }
             return () => {
             game.destroy(true); 
@@ -65,14 +102,22 @@ const PhaserGame = ({testMode=false}) =>{
 
   return (
     <div>
-        {user  ? (
+        {/*user && allTodaysTasks.length >=3 ? (
             <div
                 id="phaser-container"
                 className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
             >
-            </div>):(
-                <div className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4">Please Log in to start a quest</div>
-            )}
+            </div>
+            ):(
+                <div className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4">
+                {user? "You need at least 3 tasks to start a quest.": "Please log in to start a quest"}</div>
+            )*/}
+
+            <div id="phaser-container"
+                className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
+            >
+
+            </div>
     </div>
   
     )

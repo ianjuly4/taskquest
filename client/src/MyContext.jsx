@@ -4,6 +4,7 @@ const MyContext = createContext();
 
 const MyContextProvider = ({children}) =>{
   const [error, setError] = useState(null);
+  const [createError, setCreateError] = useState(null)
   const [loginError, setLoginError] = useState(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -84,7 +85,7 @@ const MyContextProvider = ({children}) =>{
     content
     ) => {
     setLoading(true);
-    setError(null);
+    setCreateError(null);
 
     const requestBody = {
       dateTime: formattedDate, 
@@ -115,7 +116,7 @@ const MyContextProvider = ({children}) =>{
     })
     .catch((error) => {
       console.error("Task creation error:", error.message);
-      setError("Error creating task: " + error.message);
+      setCreateError(error.message || "Task creation error" );
     })
     .finally(() => {
       setLoading(false);
@@ -270,7 +271,8 @@ const MyContextProvider = ({children}) =>{
         dateTime,
         updateTask,
         setQuestStarted,
-        questStarted
+        questStarted, 
+        createError
       }}
     >
       {children}

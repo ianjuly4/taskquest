@@ -15,21 +15,12 @@ export default class MainMenu extends Phaser.Scene{
 
     }
     create(){
-        const taskCount = this.tasks?.length || 0
-
+    
         const startTaskText = this.add.text(200, 80, 'Start Quest', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setInteractive();
-
-        const warningText = this.add.text(200, 120,"",{
-            fontFamily: 'Arial',
-            fontSize: 14,
-            color: '#ff0000',
-            align: 'center'
-        }).setOrigin(0.5);
-      
 
         startTaskText.on('pointerover', () => {
             startTaskText.setStyle({ fill: 'brown' }); 
@@ -40,7 +31,7 @@ export default class MainMenu extends Phaser.Scene{
         });
 
         startTaskText.on('pointerdown', () => {
-            if (this.testMode || taskCount >= 3) {
+            if (this.testMode) {
                 const callback = this.game.registry.get('onStartQuest');
                 if (callback) callback(); 
                 this.scene.start('Quest', {
@@ -48,8 +39,7 @@ export default class MainMenu extends Phaser.Scene{
                     user: this.user,
                     tasks: this.tasks
                 });
-                } else {
-                warningText.setText('You need at least 3 tasks to start your quest!');
+                
             }
         });
     }

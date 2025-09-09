@@ -10,6 +10,7 @@ export default class Quest extends Phaser.Scene {
         this.testMode = data.test || false
         this.user = data.user || null
         this.tasks = data.tasks || []
+        this.dayDuration = data.dayDuration || 0
         this.backgroundThemes = BackgroundThemes
         this.isTransitioning = false
         this.transitionCount = 0
@@ -127,23 +128,41 @@ export default class Quest extends Phaser.Scene {
     }
 
     startAutoTransitions() {
-        this.time.addEvent({
-            delay: 10000, 
-            callback: () => {
-                this.scrollInNewBackground()
+        const totalDuration = this.dayDuration * 60 * 1000; 
 
-                this.transitionCount++
-                if (this.transitionCount >= 3) {
-                    
+       
+        const numTransitions = this.tasks.length > 0 ? this.tasks.length : 1;
+
+    
+        let transitionInterval = totalDuration / numTransitions;
+
+     
+        if (!transitionInterval || transitionInterval <= 0) {
+            transitionInterval = 10000; 
+        }
+
+        this.transitionCount = 0;
+        this.isTransitioning = false;
+
+        this.time.addEvent({
+            delay: transitionInterval,
+            callback: () => {
+                this.scrollInNewBackground();
+
+                this.transitionCount++;
+                if (this.transitionCount >= numTransitions) {
                     this.time.delayedCall(2000, () => {
-                        this.playEndAnimation()
-                    })
+                        this.playEndAnimation();
+                    });
                 }
             },
             callbackScope: this,
             loop: true
-        })
+        });
     }
+
+
+    
 
     scrollInNewBackground() {
         if (this.isTransitioning) return

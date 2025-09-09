@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateCurrentDayTask = () => {
-  const { user, isLoggedIn, createTask, dateTime: now, questStarted } = useContext(MyContext);
+  const { user, isLoggedIn, createTask, dateTime: now, questStarted, createError } = useContext(MyContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [colorDropDown, setColorDropDown] = useState(false);
@@ -69,6 +69,7 @@ const CreateCurrentDayTask = () => {
 
       const formattedDate = values.dateTime ? values.dateTime.toISOString() : null;
 
+      
       const success = await createTask(
         formattedDate,
         values.title,
@@ -94,7 +95,6 @@ const CreateCurrentDayTask = () => {
 
   const colorOptions = [
     { name: "None", value: "" },
-    { name: "Pastel Red", value: "#FF6961" },
     { name: "Pastel Orange", value: "#FFD580" },
     { name: "Pastel Teal", value: "#ACE7EF" },
     { name: "Pastel Blue", value: "#A0CED9" },
@@ -128,6 +128,14 @@ const CreateCurrentDayTask = () => {
             {Object.entries(createTaskFormik.errors).map(([key, error]) => (
               <li key={key}>{error}</li>
             ))}
+          </ul>
+        </div>
+      )}
+
+      {createError && (
+        <div className="mt-2 bg-red-100 border border-red-400 text-red-700 text-sm rounded px-4 py-2">
+          <ul className="list-disc list-inside space-y-1">
+              <li>{createError}</li>
           </ul>
         </div>
       )}
