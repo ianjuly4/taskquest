@@ -6,7 +6,11 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CreateCurrentDayTask = () => {
+<<<<<<< HEAD
   const { user, isLoggedIn, createTask, dateTime: now, questStarted, createError } = useContext(MyContext);
+=======
+  const { user, isLoggedIn, createTask, dateTime: now, questStarted } = useContext(MyContext);
+>>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [colorDropDown, setColorDropDown] = useState(false);
@@ -69,7 +73,10 @@ const CreateCurrentDayTask = () => {
 
       const formattedDate = values.dateTime ? values.dateTime.toISOString() : null;
 
+<<<<<<< HEAD
       
+=======
+>>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
       const success = await createTask(
         formattedDate,
         values.title,
@@ -95,6 +102,10 @@ const CreateCurrentDayTask = () => {
 
   const colorOptions = [
     { name: "None", value: "" },
+<<<<<<< HEAD
+=======
+    { name: "Pastel Red", value: "#FF6961" },
+>>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
     { name: "Pastel Orange", value: "#FFD580" },
     { name: "Pastel Teal", value: "#ACE7EF" },
     { name: "Pastel Blue", value: "#A0CED9" },
@@ -132,6 +143,7 @@ const CreateCurrentDayTask = () => {
         </div>
       )}
 
+<<<<<<< HEAD
       {createError && (
         <div className="mt-2 bg-red-100 border border-red-400 text-red-700 text-sm rounded px-4 py-2">
           <ul className="list-disc list-inside space-y-1">
@@ -140,6 +152,8 @@ const CreateCurrentDayTask = () => {
         </div>
       )}
 
+=======
+>>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
       {dropdownOpen && 
         (!isLoggedIn || !user ? (
           <div className="text-red-500 text-sm mt-4">Please log in to use this feature.</div>
