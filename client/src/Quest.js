@@ -34,7 +34,7 @@ export default class Quest extends Phaser.Scene {
 
     create() {
         this.createBackground()
-
+        console.log(this.tasks)
         this.archer = this.add.sprite(-50, 130, 'ArcherWalk')
             .setOrigin(0.5, 1)
             .setDepth(3)
@@ -75,7 +75,8 @@ export default class Quest extends Phaser.Scene {
         })
     }
 
-    //
+    //utilizing the tasks or dayDuration create a background function that uses createBackground() to either create backgrounds per each task block or creates backgrounds based on dayDuration. include in this function a death scene, a start scene, victory scene, and failure scene using conditionals. 
+        //if using tasks, map the tasks into levels and have each level be a different background. Then use the timeslot logic to create durations of each level.
 
     createBackground() {
         const themes = Object.keys(this.backgroundThemes)

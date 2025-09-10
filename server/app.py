@@ -42,7 +42,7 @@ class Tasks(Resource):
             date_obj = Date(date_time=date_time, user_id=user_id)
             db.session.add(date_obj)
             db.session.flush()
-<<<<<<< HEAD
+
 
         duration = data.get('duration')
         duration = data.get("duration")
@@ -76,12 +76,12 @@ class Tasks(Resource):
 
             if not (new_end <= existing_start or new_start >= existing_end):
                 return make_response({'error': 'This time slot overlaps with another task.'}, 400)
-=======
+
         duration = data.get('duration')
         duplicate_task = Task.query.filter_by(duration = duration, date_id=date_obj.id, user_id=user_id).first()
         if duplicate_task:
             return make_response({'error': 'Cannot have duplicate tasks for one slot'}, 400)
->>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
+
 
         new_task = Task(
             title=data.get('title'),

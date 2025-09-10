@@ -4,10 +4,7 @@ const MyContext = createContext();
 
 const MyContextProvider = ({children}) =>{
   const [error, setError] = useState(null);
-<<<<<<< HEAD
   const [createError, setCreateError] = useState(null)
-=======
->>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
   const [loginError, setLoginError] = useState(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -88,11 +85,7 @@ const MyContextProvider = ({children}) =>{
     content
     ) => {
     setLoading(true);
-<<<<<<< HEAD
     setCreateError(null);
-=======
-    setError(null);
->>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
 
     const requestBody = {
       dateTime: formattedDate, 
@@ -123,11 +116,8 @@ const MyContextProvider = ({children}) =>{
     })
     .catch((error) => {
       console.error("Task creation error:", error.message);
-<<<<<<< HEAD
+
       setCreateError(error.message || "Task creation error" );
-=======
-      setError("Error creating task: " + error.message);
->>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
     })
     .finally(() => {
       setLoading(false);
@@ -282,12 +272,8 @@ const MyContextProvider = ({children}) =>{
         dateTime,
         updateTask,
         setQuestStarted,
-<<<<<<< HEAD
         questStarted, 
         createError
-=======
-        questStarted
->>>>>>> 18e034cfffc65d23fdc3c40dfaab3d08e4aaf22f
       }}
     >
       {children}
