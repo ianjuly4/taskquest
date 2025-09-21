@@ -9,6 +9,11 @@ const PhaserGame = ({testMode=false}) =>{
     const [dayDuration, setDayDuration] = useState(0)
     const dates = user?.dates
     
+    
+    useEffect(()=>{
+
+    },)
+
     const isToday = (dateStr) => {
         if(!dateStr || typeof dateStr !== 'string') return false;
 
@@ -26,6 +31,8 @@ const PhaserGame = ({testMode=false}) =>{
     const onStartQuest = () =>{
         setQuestStarted(true)
     }
+
+    
 
     const calculateDayDuration = () => {
         if (!todayEntries || todayEntries.length === 0) {
@@ -59,6 +66,7 @@ const PhaserGame = ({testMode=false}) =>{
         //console.log("🕒 Start:", start.toLocaleTimeString());
         //console.log("🕔 End:", end.toLocaleTimeString());
         //console.log("📅 Total Day Duration:", durationMinutes, "minutes");
+        console.log(durationMinutes)
         setDayDuration(durationMinutes)
         return durationMinutes;
         };

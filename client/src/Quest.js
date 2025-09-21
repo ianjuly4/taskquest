@@ -9,12 +9,45 @@ export default class Quest extends Phaser.Scene {
     init(data) {
         this.testMode = data.test || false
         this.user = data.user || null
-        this.tasks = data.tasks || []
-        this.dayDuration = data.dayDuration || 0
-        this.backgroundThemes = BackgroundThemes
-        this.isTransitioning = false
-        this.transitionCount = 0
-    }
+        //this.tasks = data.tasks || []
+        this.tasks = [{
+            "date_id": 1,
+            "content": "",
+            "id": 1,
+            "status": "pending",
+            "title": "Apply to jobs",
+            "color": "#ACE7EF",
+            "duration": 60,
+            "user_id": 1
+        },
+        {
+            "date_id": 2,
+            "content": "",
+            "id": 2,
+            "status": "complete",
+            "title": "Lunch",
+            "color": "#FF6961",
+            "duration": 30,
+            "user_id": 1
+        },
+      {
+        "date_id": 3,
+        "content": "",
+        "id": 3,
+        "status": "incomplete",
+        "title": "lunch 2",
+        "color": "#FF6961",
+        "duration": 30,
+        "user_id": 1
+        },]
+            this.dayDuration = data.dayDuration || 0
+            this.backgroundThemes = BackgroundThemes
+            this.isTransitioning = false
+            this.transitionCount = 0
+            this.hp = 10 * 100
+            this.maxHp = 10 * 100
+        }
+
 
     preload() {
         this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {
@@ -22,7 +55,11 @@ export default class Quest extends Phaser.Scene {
             frameHeight: 128
         })
 
-        this.load.image("heart", "assets/8.png")
+        //this.load.image("heart", "assets/8.png")
+        this.load.spritesheet("ArcherDeath", 'assets/heros/Archer/Dead.png',{
+            frameWidth: 384/3,
+            frameHeight: 128
+        })
 
         for (const [theme, { folder, keys }] of Object.entries(BackgroundThemes)) {
             keys.forEach((imageKey, index) => {
@@ -39,6 +76,7 @@ export default class Quest extends Phaser.Scene {
             .setOrigin(0.5, 1)
             .setDepth(3)
             .setScale(0.5)
+        
 
         this.anims.create({
             key: 'walk',
@@ -46,20 +84,19 @@ export default class Quest extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         })
+        this.anims.create({
+            key: 'Death',
+            frames:  this.anims.generateFrameNumbers("ArcherDeath", {start: 0, end: 2}),
+            frameRate: 10,
+            repeat: 0
+        })
 
+        console.log(this.tasks)
        
-        const totalTasks = this.tasks.length
-        const missed = this.tasks.filter(task => task.status === "incomplete").length
-        const damagePerMissed = 3 / totalTasks
-        const damage = missed * damagePerMissed
-        this.health = Math.max(0, 3 - damage)
-
-        this.add.sprite(30, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
-        this.add.sprite(70, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
-        this.add.sprite(110, 30, 'heart').setOrigin(0.5).setScale(0.07).setDepth(3)
-
-        
+        const healthBar = this.add.graphics().setDepth(3);
+        this.healthBar = healthBar
         this.playStartAnimation()
+        this.createHealthBar()
     }
 
     update() {
@@ -77,6 +114,40 @@ export default class Quest extends Phaser.Scene {
 
     //utilizing the tasks or dayDuration create a background function that uses createBackground() to either create backgrounds per each task block or creates backgrounds based on dayDuration. include in this function a death scene, a start scene, victory scene, and failure scene using conditionals. 
         //if using tasks, map the tasks into levels and have each level be a different background. Then use the timeslot logic to create durations of each level.
+
+    
+    createHealthBar(){
+        const width = 100
+        const height = 20
+
+        const barY = 20
+        const barX = 20
+
+        const missed = this.tasks.status === "incomplete"
+        console.log(missed)
+
+        const hpPercent = Phaser.Math.Clamp(missed/ this.maxHp, 0, 1);
+        //#FF0000 
+        //#FFFF00 yellow
+        //#008000 green
+        // HP bar
+        this.healthBar.clear();
+        if(hpPercent > 0.75){
+            this.healthBar.fillStyle(0x00ff00);
+            this.healthBar.fillRect(barX, barY, width * hpPercent, height);
+        }else if(hpPercent <= 0.75 ){
+            this.healthBar.fillStyle()
+        }else if(hpPercent >= 0.25){
+            this.healthBar.fillStyle()
+        }else if (hpPercent < 0.25){
+            this.healthBar.fillStyle()
+        }else if (hpPercent === 0){
+            this.archer.play("Death")
+        }
+        
+
+        console.log(hpPercent)
+    }
 
     createBackground() {
         const themes = Object.keys(this.backgroundThemes)
