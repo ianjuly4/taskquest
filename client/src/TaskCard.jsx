@@ -10,7 +10,8 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
     status,
     startTime,
   } = task;
-   
+  
+
   const [timeLeft, setTimeLeft] = useState(null)
 
   const handleDelete = () => {
@@ -35,7 +36,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
       setTimeLeft("0m");
       clearInterval(interval);
       if(status !== "completed" && status !== "incomplete"){
-        updateTask(task.id, {status: "incomplete"})
+        updateTask(task.id, {status: "incomplete", color: "#FF0000"})
       }
     } else {
       const totalMinutes = Math.floor(diff / 60000);
@@ -143,12 +144,14 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
                 </button>
               </>
             )}
+           
             <button
               className="bg-red-400 text-white px-3 py-1 rounded-md shadow text-sm"
               onClick={() => handleDelete(task.id)}
             >
               Delete
             </button>
+          
           </div>
         </>
       )}

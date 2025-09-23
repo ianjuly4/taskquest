@@ -9,7 +9,7 @@ export default class MainMenu extends Phaser.Scene{
         this.testMode = data.test || false
         this.user = data.user || null
         this.tasks = data.tasks || []
-        
+        this.dayDuration = data.dayDuration || 0
     }
     preload(){
 
@@ -33,6 +33,7 @@ export default class MainMenu extends Phaser.Scene{
         startTaskText.on('pointerdown', () => {
             if (this.testMode) {
                 const callback = this.game.registry.get('onStartQuest');
+
                 if (callback) callback(); 
                 this.scene.start('Quest', {
                     test: true,
@@ -40,6 +41,16 @@ export default class MainMenu extends Phaser.Scene{
                     tasks: this.tasks
                 });
                 
+            }else{
+                const callback = this.game.registry.get('onStartQuest');
+
+                if (callback) callback(); 
+                this.scene.start('Quest', {
+                    test: this.testMode,
+                    user: this.user,
+                    tasks: this.tasks,
+                    dayDuration: this.dayDuration
+                });
             }
         });
     }

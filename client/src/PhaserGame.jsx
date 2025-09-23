@@ -5,14 +5,11 @@ import { MyContext } from "./MyContext";
 import MainMenu from "./MainMenu";
 
 const PhaserGame = ({testMode=false}) =>{
-    const {user, setQuestStarted} = useContext(MyContext)
+    const {user, onStartQuest} = useContext(MyContext)
     const [dayDuration, setDayDuration] = useState(0)
     const dates = user?.dates
     
     
-    useEffect(()=>{
-
-    },)
 
     const isToday = (dateStr) => {
         if(!dateStr || typeof dateStr !== 'string') return false;
@@ -28,9 +25,7 @@ const PhaserGame = ({testMode=false}) =>{
 
     const todayEntries = dates?.filter((d) => isToday(d.date_time)) || [];
     const allTodaysTasks = todayEntries.flatMap((entry) => entry.tasks || []);
-    const onStartQuest = () =>{
-        setQuestStarted(true)
-    }
+    
 
     
 
@@ -66,14 +61,16 @@ const PhaserGame = ({testMode=false}) =>{
         //console.log("🕒 Start:", start.toLocaleTimeString());
         //console.log("🕔 End:", end.toLocaleTimeString());
         //console.log("📅 Total Day Duration:", durationMinutes, "minutes");
-        console.log(durationMinutes)
+        //console.log(durationMinutes)
         setDayDuration(durationMinutes)
         return durationMinutes;
         };
 
     
     useEffect(()=>{
-        if(!user) return
+        if(!user || allTodaysTasks.length < 3) return
+
+            const duration = calculateDayDuration()
             const config = {
                 type: Phaser.AUTO,
                 width: 370,
@@ -100,17 +97,19 @@ const PhaserGame = ({testMode=false}) =>{
 
             const game = new Phaser.Game(config);
 
-            if(testMode){
-                game.scene.start('MainMenu', {test: true, user, tasks: allTodaysTasks, dayDuration})
+            if(testMode === true){
+                game.scene.start('MainMenu', {test: true, user, tasks: allTodaysTasks, dayDuration: duration})
+            }else{
+                game.scene.start('MainMenu', {test: false, user, tasks: allTodaysTasks, dayDuration: duration})
             }
             return () => {
             game.destroy(true); 
             };
-        }, [testMode, user]);
+        }, [testMode, allTodaysTasks.length]);
 
   return (
     <div>
-        {/*user && allTodaysTasks.length >=3 ? (
+        {user && allTodaysTasks.length >=3 ? (
             <div
                 id="phaser-container"
                 className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
@@ -119,13 +118,8 @@ const PhaserGame = ({testMode=false}) =>{
             ):(
                 <div className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4">
                 {user? "You need at least 3 tasks to start a quest.": "Please log in to start a quest"}</div>
-            )*/}
+            )}
 
-            <div id="phaser-container"
-                className="w-full h-[200px] bg-gray-300 text-black border-4 border-gray-300 justify-center rounded-3xl p-4 mt-4"
-            >
-
-            </div>
     </div>
   
     )

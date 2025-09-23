@@ -249,7 +249,12 @@ const MyContextProvider = ({children}) =>{
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-  
+
+  const onStartQuest = () =>{
+        setQuestStarted(true)
+    
+    }
+
 
 
  return (
@@ -273,7 +278,8 @@ const MyContextProvider = ({children}) =>{
         updateTask,
         setQuestStarted,
         questStarted, 
-        createError
+        createError,
+        onStartQuest
       }}
     >
       {children}

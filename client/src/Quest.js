@@ -9,43 +9,13 @@ export default class Quest extends Phaser.Scene {
     init(data) {
         this.testMode = data.test || false
         this.user = data.user || null
-        //this.tasks = data.tasks || []
-        this.tasks = [{
-            "date_id": 1,
-            "content": "",
-            "id": 1,
-            "status": "pending",
-            "title": "Apply to jobs",
-            "color": "#ACE7EF",
-            "duration": 60,
-            "user_id": 1
-        },
-        {
-            "date_id": 2,
-            "content": "",
-            "id": 2,
-            "status": "complete",
-            "title": "Lunch",
-            "color": "#FF6961",
-            "duration": 30,
-            "user_id": 1
-        },
-      {
-        "date_id": 3,
-        "content": "",
-        "id": 3,
-        "status": "incomplete",
-        "title": "lunch 2",
-        "color": "#FF6961",
-        "duration": 30,
-        "user_id": 1
-        },]
-            this.dayDuration = data.dayDuration || 0
-            this.backgroundThemes = BackgroundThemes
-            this.isTransitioning = false
-            this.transitionCount = 0
-            this.hp = 10 * 100
-            this.maxHp = 10 * 100
+        this.tasks = data.tasks || []
+        this.dayDuration = data.dayDuration || 0
+        this.backgroundThemes = BackgroundThemes
+        this.isTransitioning = false
+        this.transitionCount = 0
+        this.hp = 10 * 100
+        this.maxHp = this.tasks.length * 100
         }
 
 
@@ -99,6 +69,7 @@ export default class Quest extends Phaser.Scene {
         this.createHealthBar()
     }
 
+    
     update() {
         this.backgroundLayers?.forEach(({ layer, speed, isCloud }) => {
             if (layer.tilePositionX !== undefined) {
@@ -122,32 +93,61 @@ export default class Quest extends Phaser.Scene {
 
         const barY = 20
         const barX = 20
-
-        const missed = this.tasks.status === "incomplete"
-        console.log(missed)
-
-        const hpPercent = Phaser.Math.Clamp(missed/ this.maxHp, 0, 1);
-        //#FF0000 
-        //#FFFF00 yellow
-        //#008000 green
-        // HP bar
+        
+        const missed = this.tasks.filter(task => task.status === "incomplete");
+        const damage = missed.length * 100;
+        const currentHp = Math.max(this.maxHp - damage, 0);
+        const hpPercent = currentHp / this.maxHp;
+       
         this.healthBar.clear();
-        if(hpPercent > 0.75){
-            this.healthBar.fillStyle(0x00ff00);
-            this.healthBar.fillRect(barX, barY, width * hpPercent, height);
-        }else if(hpPercent <= 0.75 ){
-            this.healthBar.fillStyle()
-        }else if(hpPercent >= 0.25){
-            this.healthBar.fillStyle()
-        }else if (hpPercent < 0.25){
-            this.healthBar.fillStyle()
-        }else if (hpPercent === 0){
-            this.archer.play("Death")
+        let color;
+        if (hpPercent > 0.75) {
+            color = 0x00ff00; 
+        } else if (hpPercent > 0.5) {
+            color = 0xffff00; 
+        } else if (hpPercent > 0.25) {
+            color = 0xffa500; 
+        } else {
+            color = 0xff0000;
+            this.showDeathScreen() 
         }
         
+        this.healthBar.fillStyle(color);
+        this.healthBar.fillRect(barX, barY, width * hpPercent, height);
 
+       
+        this.healthBar.lineStyle(2, 0x000000);
+        this.healthBar.strokeRect(barX, barY, width, height);
+        console.log(this.maxHp)
         console.log(hpPercent)
     }
+
+    showDeathScreen() {
+        const { width, height } = this.sys.game.canvas;
+
+        const background = this.add.rectangle(0, 0, width, height, 0x000000)
+            .setOrigin(0)
+            .setDepth(100);
+
+        const endText = this.add.text(width / 2, height / 2 - 60, 'Quest Failed', {
+            fontSize: '32px',
+            fill: '#FFFFFF',
+            fontFamily: 'Arial',
+        }).setOrigin(0.5).setDepth(101);
+
+       
+        const deathSprite = this.add.sprite(width / 2, height / 2 + 20, 'archerdeath')
+            .setScale(2)
+            .setDepth(101);
+
+        
+        deathSprite.play('archer_death');
+
+        this.input.enabled = false;
+
+       
+        }
+
 
     createBackground() {
         const themes = Object.keys(this.backgroundThemes)

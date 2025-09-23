@@ -4,7 +4,7 @@ import TaskCard from "./TaskCard";
 import { DateSchema } from "yup";
 
 const TimeSlots = ({handleCompleteTask}) =>{
-    const { user, deleteTask, updateTask } = useContext(MyContext);
+    const { user, deleteTask, updateTask, questStarted, setError } = useContext(MyContext);
     const [openTaskId, setOpenTaskId] = useState(null)
     const dates = user?.dates || []; 
    
@@ -91,13 +91,15 @@ const TimeSlots = ({handleCompleteTask}) =>{
                             isOpen={openTaskId === task.id}
                             handleCompleteTask={handleCompleteTask}
                             updateTask={updateTask}
+                            questStarted={questStarted}
+                            setError={setError}
                             onToggle={() =>
                                 setOpenTaskId(openTaskId === task.id ? null : task.id)
                             }
                         />
                     </div>
-    );
-})}
+            );
+        })}
 
           
         </div>

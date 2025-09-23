@@ -16,7 +16,7 @@ function App() {
       <div className="mt-4 relative z-10">
         <TaskContainer />
       </div>
-        <PhaserGame testMode={true}/>
+        <PhaserGame testMode={false}/>
     </div>
 
   );
