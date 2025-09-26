@@ -15,6 +15,7 @@ export default class MainMenu extends Phaser.Scene{
 
     }
     create(){
+        
     
         const startTaskText = this.add.text(200, 80, 'Start Quest', {
             fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
@@ -38,7 +39,8 @@ export default class MainMenu extends Phaser.Scene{
                 this.scene.start('Quest', {
                     test: true,
                     user: this.user,
-                    tasks: this.tasks
+                    tasks: this.tasks,
+                    dayDuration: this.dayDuration
                 });
                 
             }else{

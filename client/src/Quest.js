@@ -18,7 +18,7 @@ export default class Quest extends Phaser.Scene {
         this.maxHp = this.tasks.length * 100
         }
 
-
+        
     preload() {
         this.load.spritesheet('ArcherWalk', 'assets/heros/Archer/Walk.png', {
             frameWidth: 1024 / 8,
@@ -41,7 +41,6 @@ export default class Quest extends Phaser.Scene {
 
     create() {
         this.createBackground()
-        console.log(this.tasks)
         this.archer = this.add.sprite(-50, 130, 'ArcherWalk')
             .setOrigin(0.5, 1)
             .setDepth(3)
@@ -67,10 +66,13 @@ export default class Quest extends Phaser.Scene {
         this.healthBar = healthBar
         this.playStartAnimation()
         this.createHealthBar()
+        console.log(this.dayDuration)
     }
 
     
     update() {
+        this.createHealthBar()
+
         this.backgroundLayers?.forEach(({ layer, speed, isCloud }) => {
             if (layer.tilePositionX !== undefined) {
                
@@ -118,8 +120,7 @@ export default class Quest extends Phaser.Scene {
        
         this.healthBar.lineStyle(2, 0x000000);
         this.healthBar.strokeRect(barX, barY, width, height);
-        console.log(this.maxHp)
-        console.log(hpPercent)
+       
     }
 
     showDeathScreen() {
@@ -212,7 +213,7 @@ export default class Quest extends Phaser.Scene {
         if (!transitionInterval || transitionInterval <= 0) {
             transitionInterval = 10000; 
         }
-
+        //console.log(transitionInterval)
         this.transitionCount = 0;
         this.isTransitioning = false;
 

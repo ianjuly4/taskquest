@@ -6,7 +6,6 @@ import MainMenu from "./MainMenu";
 
 const PhaserGame = ({testMode=false}) =>{
     const {user, onStartQuest} = useContext(MyContext)
-    const [dayDuration, setDayDuration] = useState(0)
     const dates = user?.dates
     
     
@@ -62,10 +61,11 @@ const PhaserGame = ({testMode=false}) =>{
         //console.log("🕔 End:", end.toLocaleTimeString());
         //console.log("📅 Total Day Duration:", durationMinutes, "minutes");
         //console.log(durationMinutes)
-        setDayDuration(durationMinutes)
+    
         return durationMinutes;
+       
         };
-
+       
     
     useEffect(()=>{
         if(!user || allTodaysTasks.length < 3) return
