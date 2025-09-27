@@ -98,6 +98,7 @@ export default class Quest extends Phaser.Scene {
         
         const missed = this.tasks.filter(task => task.status === "incomplete");
         const damage = missed.length * 100;
+       
         const currentHp = Math.max(this.maxHp - damage, 0);
         const hpPercent = currentHp / this.maxHp;
        
@@ -126,28 +127,39 @@ export default class Quest extends Phaser.Scene {
     showDeathScreen() {
         const { width, height } = this.sys.game.canvas;
 
-        const background = this.add.rectangle(0, 0, width, height, 0x000000)
+        // Stop any transitions
+        this.isTransitioning = true;
+
+        // Dark overlay
+        this.add.rectangle(0, 0, width, height, 0x000000)
             .setOrigin(0)
             .setDepth(100);
 
-        const endText = this.add.text(width / 2, height / 2 - 60, 'Quest Failed', {
+        // Death message
+        this.add.text(width / 2, height / 2 - 60, 'Quest Failed', {
             fontSize: '32px',
             fill: '#FFFFFF',
             fontFamily: 'Arial',
         }).setOrigin(0.5).setDepth(101);
 
-       
-        const deathSprite = this.add.sprite(width / 2, height / 2 + 20, 'archerdeath')
-            .setScale(2)
+        // Hide original archer
+        if (this.archer) {
+            this.archer.setVisible(false); // or .destroy()
+        }
+
+        // Death sprite
+        const deathSprite = this.add.sprite(150, 130, 'ArcherDeath')
+            .setOrigin(0.5, 1)
+            .setScale(0.5)
             .setDepth(101);
 
-        
-        deathSprite.play('archer_death');
+        // Play death animation
+        deathSprite.play('Death');
 
+        // Disable input
         this.input.enabled = false;
+    }
 
-       
-        }
 
 
     createBackground() {
