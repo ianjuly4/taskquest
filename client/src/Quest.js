@@ -9,7 +9,14 @@ export default class Quest extends Phaser.Scene {
     init(data) {
         this.testMode = data.test || false
         this.user = data.user || null
-        this.tasks = data.tasks || []
+        //this.tasks = data.tasks || []
+        this.tasks = [
+        { status: "incomplete" },
+        { status: "incomplete" },
+        { status: "incomplete" },
+        { status: "incomplete" },
+        { status: "incomplete" }
+    ]
         this.dayDuration = data.dayDuration || 0
         this.backgroundThemes = BackgroundThemes
         this.isTransitioning = false
@@ -41,6 +48,8 @@ export default class Quest extends Phaser.Scene {
 
     create() {
         this.createBackground()
+      
+       
         this.archer = this.add.sprite(-50, 130, 'ArcherWalk')
             .setOrigin(0.5, 1)
             .setDepth(3)
@@ -59,7 +68,7 @@ export default class Quest extends Phaser.Scene {
             frameRate: 10,
             repeat: 0
         })
-
+      
         console.log(this.tasks)
        
         const healthBar = this.add.graphics().setDepth(3);
@@ -103,21 +112,24 @@ export default class Quest extends Phaser.Scene {
         const hpPercent = currentHp / this.maxHp;
        
         this.healthBar.clear();
+
         let color;
         if (hpPercent > 0.75) {
             color = 0x00ff00; 
-        } else if (hpPercent > 0.5) {
+        } else if (hpPercent <= 0.75 && hpPercent > 0.5) {
             color = 0xffff00; 
-        } else if (hpPercent > 0.25) {
+        } else if (hpPercent<=0.5 && hpPercent > 0.25) {
             color = 0xffa500; 
-        } else {
-            color = 0xff0000;
+        } else if(hpPercent <= 0.25 && hpPercent >0 ) {
+            color = 0xff0000
+        }else if(hpPercent === 0){
             this.showDeathScreen() 
         }
-        
+
+        //console.log(hpPercent)
         this.healthBar.fillStyle(color);
         this.healthBar.fillRect(barX, barY, width * hpPercent, height);
-
+        //console.log(this.archer.texture)
        
         this.healthBar.lineStyle(2, 0x000000);
         this.healthBar.strokeRect(barX, barY, width, height);
@@ -142,21 +154,18 @@ export default class Quest extends Phaser.Scene {
             fontFamily: 'Arial',
         }).setOrigin(0.5).setDepth(101);
 
-        // Hide original archer
-        if (this.archer) {
-            this.archer.setVisible(false); // or .destroy()
-        }
+       
+        
+        
+        //const deathSprite = this.add.sprite(150, 130, 'ArcherDeath')
+           // .setOrigin(0.5, 1)
+            //.setScale(0.5)
+            //.setDepth(101);
 
-        // Death sprite
-        const deathSprite = this.add.sprite(150, 130, 'ArcherDeath')
-            .setOrigin(0.5, 1)
-            .setScale(0.5)
-            .setDepth(101);
+        
+        this.archer.play('Death');
 
-        // Play death animation
-        deathSprite.play('Death');
-
-        // Disable input
+        
         this.input.enabled = false;
     }
 
