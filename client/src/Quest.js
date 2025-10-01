@@ -9,20 +9,14 @@ export default class Quest extends Phaser.Scene {
     init(data) {
         this.testMode = data.test || false
         this.user = data.user || null
-        //this.tasks = data.tasks || []
-        this.tasks = [
-        { status: "incomplete" },
-        { status: "incomplete" },
-        { status: "incomplete" },
-        { status: "incomplete" },
-        { status: "incomplete" }
-    ]
+        this.tasks = data.tasks || []
         this.dayDuration = data.dayDuration || 0
         this.backgroundThemes = BackgroundThemes
         this.isTransitioning = false
         this.transitionCount = 0
         this.hp = 10 * 100
         this.maxHp = this.tasks.length * 100
+        this.isDead = false
         }
 
         
@@ -49,12 +43,15 @@ export default class Quest extends Phaser.Scene {
     create() {
         this.createBackground()
       
-       
         this.archer = this.add.sprite(-50, 130, 'ArcherWalk')
             .setOrigin(0.5, 1)
             .setDepth(3)
             .setScale(0.5)
-        
+
+        //this.archerDeath = this.add.sprite(150, 130, 'ArcherDeath')
+            //.setOrigin(0.5, 1)
+            //.setScale(0.5)
+            //.setDepth(101);
 
         this.anims.create({
             key: 'walk',
@@ -63,23 +60,26 @@ export default class Quest extends Phaser.Scene {
             repeat: -1
         })
         this.anims.create({
-            key: 'Death',
+            key: 'death',
             frames:  this.anims.generateFrameNumbers("ArcherDeath", {start: 0, end: 2}),
-            frameRate: 10,
+            frameRate: 2,
             repeat: 0
         })
-      
-        console.log(this.tasks)
+        //console.log(this.tasks)
        
         const healthBar = this.add.graphics().setDepth(3);
         this.healthBar = healthBar
         this.playStartAnimation()
         this.createHealthBar()
-        console.log(this.dayDuration)
+        //console.log(this.dayDuration)
+        console.log(this.archer.x,this.archer.y)
     }
 
     
     update() {
+        if(this.isDead){
+            return
+        }
         this.createHealthBar()
 
         this.backgroundLayers?.forEach(({ layer, speed, isCloud }) => {
@@ -123,13 +123,14 @@ export default class Quest extends Phaser.Scene {
         } else if(hpPercent <= 0.25 && hpPercent >0 ) {
             color = 0xff0000
         }else if(hpPercent === 0){
+            //this.isDead = true
             this.showDeathScreen() 
         }
 
         //console.log(hpPercent)
         this.healthBar.fillStyle(color);
         this.healthBar.fillRect(barX, barY, width * hpPercent, height);
-        //console.log(this.archer.texture)
+       
        
         this.healthBar.lineStyle(2, 0x000000);
         this.healthBar.strokeRect(barX, barY, width, height);
@@ -137,11 +138,13 @@ export default class Quest extends Phaser.Scene {
     }
 
     showDeathScreen() {
+       
+        //console.log('death scene triggered')
         const { width, height } = this.sys.game.canvas;
 
         // Stop any transitions
-        this.isTransitioning = true;
-
+        this.isTransitioning = false;
+        
         // Dark overlay
         this.add.rectangle(0, 0, width, height, 0x000000)
             .setOrigin(0)
@@ -153,19 +156,29 @@ export default class Quest extends Phaser.Scene {
             fill: '#FFFFFF',
             fontFamily: 'Arial',
         }).setOrigin(0.5).setDepth(101);
-
        
+        //console.log(this.archer.texture)
+       
+        this.archer.setDepth(102)
         
-        
+           this.time.delayedCall(2000, () => {
+                const { x, y } = this.archer;
+                this.archer.anims.stop();
+                this.archer.destroy();
+
+                this.add.sprite(x, y, 'ArcherDeath')
+                    .setOrigin(0.5, 1)
+                    .setScale(0.5)
+                    .setDepth(102)
+                    .play('death');
+            });
         //const deathSprite = this.add.sprite(150, 130, 'ArcherDeath')
-           // .setOrigin(0.5, 1)
+            //.setOrigin(0.5, 1)
             //.setScale(0.5)
-            //.setDepth(101);
-
-        
-        this.archer.play('Death');
-
-        
+            //.setDepth(101)
+            //.play('death')
+           
+        //console.log(deathSprite.texture)
         this.input.enabled = false;
     }
 

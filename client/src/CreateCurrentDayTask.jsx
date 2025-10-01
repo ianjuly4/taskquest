@@ -221,8 +221,8 @@ const CreateCurrentDayTask = () => {
                 >
                   <option value="">Select Status</option>
                   <option value="pending">Pending</option>
-                  <option value="completed">Completed</option>
-                  <option value="incomplete">Incomplete</option>
+                  {/*<option value="completed">Completed</option>
+                  <option value="incomplete">Incomplete</option>*/}
                 </select>
               </div>
 

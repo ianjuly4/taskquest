@@ -36,7 +36,7 @@ const TaskCard = ({ task, deleteTask, isOpen, onToggle, updateTask, handleComple
       setTimeLeft("0m");
       clearInterval(interval);
       if(status !== "completed" && status !== "incomplete"){
-        updateTask(task.id, {status: "incomplete", color: "#FF0000"})
+        updateTask(task.id, {status: "incomplete", color: "#FF6666"})
       }
     } else {
       const totalMinutes = Math.floor(diff / 60000);
